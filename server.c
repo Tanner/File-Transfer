@@ -21,15 +21,22 @@ int main(int argc, char *argv[])
 	struct sockaddr_in client_address;
 	unsigned int client_address_size;
 	unsigned short server_port;
-    unsigned short loss_percentage;
+    int loss_percentage;
 
-	if (argc != 3){
-		fprintf(stderr, "Usage:  %s <Server Port> <Loss Percentage>\n", argv[0]);
+	if (argc < 3 || argc > 4){
+		fprintf(stderr, "Usage:  %s <Server Port> <Loss Percentage> [-d]\n", argv[0]);
 		exit(1);
 	}
 
 	server_port = atoi(argv[1]);
     loss_percentage = atoi(argv[2]);
+
+    if (argc == 4 && strcmp(argv[4], "-d") == 0) {
+        printf("Debug mode on.\n");
+        debug = 1;
+    }
+
+    set_dropper(loss_percentage);
 
     // Set the dropper loss percentage
     if (set_dropper(loss_percentage) < 0) {
