@@ -21,13 +21,21 @@ int main(int argc, char *argv[])
 	struct sockaddr_in client_address;
 	unsigned int client_address_size;
 	unsigned short server_port;
+    unsigned short loss_percentage;
 
-	if (argc != 2){
-		fprintf(stderr, "Usage:  %s <Server Port>\n", argv[0]);
+	if (argc != 3){
+		fprintf(stderr, "Usage:  %s <Server Port> <Loss Percentage>\n", argv[0]);
 		exit(1);
 	}
 
 	server_port = atoi(argv[1]); // First argument – port number
+    loss_percentage = atoi(argv[2]); // Second argument - loss percentage
+
+    // Set the dropper loss percentage
+    if (set_dropper(loss_percentage) < 0) {
+        fprintf(stderr, "Invalid loss percentage - Must be between 0 and 100.");
+        exit(2);
+    }
 
 	// Create socket for incoming connections
 	if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
