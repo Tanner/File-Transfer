@@ -7,8 +7,12 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "dropper.h"
+
 #define MAX_PENDING 5
 #define BUFFER_MAX_SIZE 255
+
+int debug;
 
 int main(int argc, char *argv[])
 {

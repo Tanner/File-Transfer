@@ -6,7 +6,11 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "dropper.h"
+
 #define DEFAULT_SERVER_PORT 7
+
+int debug;
 
 int main(int argc, char *argv[]) {
 	char *server_ip;
