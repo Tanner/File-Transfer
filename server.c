@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	server_port = atoi(argv[1]); // First argument – port number
-    loss_percentage = atoi(argv[2]); // Second argument - loss percentage
+	server_port = atoi(argv[1]);
+    loss_percentage = atoi(argv[2]);
 
     // Set the dropper loss percentage
     if (set_dropper(loss_percentage) < 0) {
