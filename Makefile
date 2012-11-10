@@ -5,10 +5,10 @@ RELEASE_FLAGS = -O2
 DEBUG_FLAGS = -g -DDEBUG
 
 CLIENT_OBJ = client.o
-CLIENT_TARGET = client
+CLIENT_TARGET = kftclient
 
 SERVER_OBJ = server.o
-SERVER_TARGET = server
+SERVER_TARGET = kftserver
 
 all: CFLAGS += $(RELEASE_FLAGS)
 all: $(CLIENT_TARGET) $(SERVER_TARGET)
