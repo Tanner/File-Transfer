@@ -6,9 +6,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include "dropper.h"
-
-int debug;
+#include "arq.h"
 
 int main(int argc, char *argv[]) {
 	char *server_ip, *remote_filename, *local_filename;
@@ -32,9 +30,10 @@ int main(int argc, char *argv[]) {
         debug = 1;
     }
 
-    // Set the dropper loss percentage
-    if (set_dropper(loss_percentage) < 0) {
-        fprintf(stderr, "Invalid loss percentage - Must be between 0 and 100.");
+    // Set up ARQ with loss_percentage
+    if (arq_init(loss_percentage) < 0) {
+        fprintf(stderr, "Unable to set up ARQ\n");
+        fprintf(stderr, "Invalid loss percentage - Must be between 0 and 100.\n");
         exit(2);
     }
 

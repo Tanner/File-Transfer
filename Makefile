@@ -4,10 +4,10 @@ CFLAGS = -Wall -Werror -ansi -pedantic -std=c99
 RELEASE_FLAGS = -O2
 DEBUG_FLAGS = -g -DDEBUG
 
-CLIENT_OBJ = client.o dropper.o
+CLIENT_OBJ = client.o dropper.o arq.o
 CLIENT_TARGET = kftclient
 
-SERVER_OBJ = server.o dropper.o
+SERVER_OBJ = server.o dropper.o arq.o
 SERVER_TARGET = kftserver
 
 all: CFLAGS += $(RELEASE_FLAGS)

@@ -7,12 +7,10 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include "dropper.h"
+#include "arq.h"
 
 #define MAX_PENDING 5
 #define BUFFER_MAX_SIZE 255
-
-int debug;
 
 int main(int argc, char *argv[])
 {
@@ -36,14 +34,12 @@ int main(int argc, char *argv[])
         debug = 1;
     }
 
-    set_dropper(loss_percentage);
-
-    // Set the dropper loss percentage
-    if (set_dropper(loss_percentage) < 0) {
-        fprintf(stderr, "Invalid loss percentage - Must be between 0 and 100.");
+    // Set up ARQ with loss_percentage
+    if (arq_init(loss_percentage) < 0) {
+        fprintf(stderr, "Unable to set up ARQ\n");
+        fprintf(stderr, "Invalid loss percentage - Must be between 0 and 100.\n");
         exit(2);
     }
-
 	// Create socket for incoming connections
 	if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 		fprintf(stderr, "Could not create socket.");
