@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	int sock;
 	struct sockaddr_in server_address;
 	struct sockaddr_in client_address;
-	unsigned int client_address_size;
+	int client_address_size;
 	unsigned short server_port;
     int loss_percentage;
 
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	while(1) {
 		client_address_size = sizeof(client_address);
 
-        if ((message_size = recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
+        if ((message_size = arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
             fprintf(stderr, "Could not receive message from client.");
             exit(2);
         }
