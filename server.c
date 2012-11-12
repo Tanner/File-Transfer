@@ -72,8 +72,6 @@ int main(int argc, char *argv[])
 
         printf("Handling client %s\n", inet_ntoa(client_address.sin_addr));
 
-        buffer[message_size] = '\0';
-
         printf("Received: %s\n", buffer);
 
         //arq_sendto(sock, buffer, message_size, 0, (struct sockaddr *) &client_address, sizeof(client_address));
