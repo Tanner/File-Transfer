@@ -22,6 +22,8 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
 
     char recv_buffer[BUFFER_MAX_SIZE];
     int recv_buffer_size;
+    
+    memset(recv_buffer, 0, BUFFER_MAX_SIZE);
 
     if ((recv_buffer_size = recvfrom(sock, recv_buffer, BUFFER_MAX_SIZE, 0, 0, 0)) < 0) {
         printf("Recvd Buffer Size %d\n", recv_buffer_size);
