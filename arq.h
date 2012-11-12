@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 
+#include "utilities.h"
 #include "dropper.h"
 
 #ifndef __ARQ_H__

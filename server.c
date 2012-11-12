@@ -7,10 +7,10 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "utilities.h"
 #include "arq.h"
 
 #define MAX_PENDING 5
-#define BUFFER_MAX_SIZE 255
 
 int main(int argc, char *argv[])
 {

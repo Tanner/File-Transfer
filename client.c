@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "utilities.h"
 #include "arq.h"
 
 int main(int argc, char *argv[]) {
