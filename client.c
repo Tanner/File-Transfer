@@ -57,6 +57,14 @@ int main(int argc, char *argv[]) {
 	server_address.sin_addr.s_addr = inet_addr(server_ip);
 	server_address.sin_port = htons(server_port);
 
+    for (int i = 0; i < 10; i++) {
+        char buffer[512];
+        memset(buffer, 0, 512);
+        sprintf(buffer, "Number %d", i);
+
+        arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address));
+    }
+
     close(sock);
 
 	exit(0);
