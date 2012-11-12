@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	server_port = atoi(argv[1]);
     loss_percentage = atoi(argv[2]);
 
-    if (argc == 4 && strcmp(argv[4], "-d") == 0) {
+    if (argc == 4 && strcmp(argv[3], "-d") == 0) {
         printf("Debug mode on.\n");
         debug = 1;
     }
