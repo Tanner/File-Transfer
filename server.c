@@ -76,6 +76,6 @@ int main(int argc, char *argv[])
 
         printf("Received: %s\n", buffer);
 
-        arq_sendto(sock, buffer, message_size, 0, (struct sockaddr *) &client_address, sizeof(client_address));
+        //arq_sendto(sock, buffer, message_size, 0, (struct sockaddr *) &client_address, sizeof(client_address));
 	}
 }
