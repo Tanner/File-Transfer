@@ -35,12 +35,9 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     memset(recv_buffer, 0, BUFFER_MAX_SIZE);
 
     if ((recv_buffer_size = recvfrom(sock, recv_buffer, BUFFER_MAX_SIZE, 0, 0, 0)) < 0) {
-        printf("Recvd Buffer Size %d\n", recv_buffer_size);
         fprintf(stderr, "Could not receive message from server.");
         exit(2);
     }
-
-    printf("Received a message from the server!\n");
 
     int split_size = 0;
     char **split_buffer = split(recv_buffer, " ", &split_size);
@@ -56,6 +53,10 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
 
 ssize_t arq_recvfrom(int sock, void *buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len) {
     int size = recvfrom(sock, buffer, len, flags, src_addr, (socklen_t *) addr_len);
+
+    if (debug) {
+        printf("Received: %s\n", (char *) buffer);
+    }
 
     int split_size = 0;
     char **split_buffer = split(buffer, " ", &split_size);
@@ -76,8 +77,8 @@ ssize_t arq_ack(int sock, int sequence_number, struct sockaddr *dest_addr, int a
 
     int size = sendto_dropper(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
 
-    if (debug || 1) {
-        printf("Sent an ACK\n");
+    if (debug) {
+        printf("Sent ACK %d\n", sequence_number);
     }
 
     return size;
