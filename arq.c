@@ -18,7 +18,16 @@ int arq_init(int loss_percentage) {
 }
 
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len) {
-    int size = sendto_dropper(sock, buffer, len, flags, dest_addr, addr_len);
+    void *seq_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+
+    sprintf(seq_buffer, "%d ", sequence_number);
+    strncat(seq_buffer, buffer, BUFFER_MAX_SIZE - strlen(seq_buffer));
+
+    if (debug) {
+        printf("Sending: %s\n", (char *) seq_buffer);
+    }
+
+    int size = sendto_dropper(sock, seq_buffer, len, flags, dest_addr, addr_len);
 
     char recv_buffer[BUFFER_MAX_SIZE];
     int recv_buffer_size;
@@ -36,9 +45,11 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     int split_size = 0;
     char **split_buffer = split(recv_buffer, " ", &split_size);
 
-    if (strcmp(split_buffer[0], "ACK") == 0) {
-        printf("Got an ACK!\n");
+    if (split_size == 2 && strcmp(split_buffer[0], "ACK") == 0) {
+        printf("ACK received - %d\n", atoi(split_buffer[1]));
     }
+
+    sequence_number = (sequence_number + 1) % 2;
 
     return size;
 }
