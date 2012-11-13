@@ -56,13 +56,16 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
                     exit(2);
                 }
             } else {
+                // We got a message!
                 int split_size = 0;
                 char **split_buffer = split(recv_buffer, " ", &split_size);
 
                 if (split_size == 2 && strcmp(split_buffer[0], "ACK") == 0) {
-                    printf("ACK received - %d\n", atoi(split_buffer[1]));
+                    int ack_sequence_number = atoi(split_buffer[1]);
 
-                    message_received = 1;
+                    if (ack_sequence_number == sequence_number) {
+                        message_received = 1;
+                    }
                 }
             }
 
