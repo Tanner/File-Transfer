@@ -1,5 +1,7 @@
 #include "arq.h"
 
+#define ACK_TIMEOUT 2
+
 static int sequence_number;
 
 int arq_init(int loss_percentage) {
@@ -18,33 +20,55 @@ int arq_init(int loss_percentage) {
 }
 
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len) {
+    struct timeval tv;
+    time_t sent_time;
+    int size;
+    char recv_buffer[BUFFER_MAX_SIZE];
+    int recv_buffer_size;
+
+    int message_received = 0;
+    
+    memset(recv_buffer, 0, BUFFER_MAX_SIZE);
+
+    // Format message to send with sequence number
     void *seq_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
 
     sprintf(seq_buffer, "%d ", sequence_number);
     strncat(seq_buffer, buffer, BUFFER_MAX_SIZE - strlen(seq_buffer));
 
-    if (debug) {
-        printf("Sending: %s\n", (char *) seq_buffer);
-    }
+    // Send the message and see if we get an ACK
+    do {
+        if (debug) {
+            printf("Sending: %s\n", (char *) seq_buffer);
+        }
+        
+        size = sendto_dropper(sock, seq_buffer, len, flags, dest_addr, addr_len);
 
-    int size = sendto_dropper(sock, seq_buffer, len, flags, dest_addr, addr_len);
+        gettimeofday(&tv, 0);
+        sent_time = tv.tv_sec;
 
-    char recv_buffer[BUFFER_MAX_SIZE];
-    int recv_buffer_size;
-    
-    memset(recv_buffer, 0, BUFFER_MAX_SIZE);
+        do {
+            if ((recv_buffer_size = recvfrom(sock, recv_buffer, BUFFER_MAX_SIZE, MSG_DONTWAIT, 0, 0)) < 0) {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    // Nothing bad happened, just nothing happened
+                } else {
+                    fprintf(stderr, "Could not receive message from server.");
+                    exit(2);
+                }
+            } else {
+                int split_size = 0;
+                char **split_buffer = split(recv_buffer, " ", &split_size);
 
-    if ((recv_buffer_size = recvfrom(sock, recv_buffer, BUFFER_MAX_SIZE, 0, 0, 0)) < 0) {
-        fprintf(stderr, "Could not receive message from server.");
-        exit(2);
-    }
+                if (split_size == 2 && strcmp(split_buffer[0], "ACK") == 0) {
+                    printf("ACK received - %d\n", atoi(split_buffer[1]));
 
-    int split_size = 0;
-    char **split_buffer = split(recv_buffer, " ", &split_size);
+                    message_received = 1;
+                }
+            }
 
-    if (split_size == 2 && strcmp(split_buffer[0], "ACK") == 0) {
-        printf("ACK received - %d\n", atoi(split_buffer[1]));
-    }
+            gettimeofday(&tv, 0);
+        } while (tv.tv_sec - sent_time < ACK_TIMEOUT && !message_received);
+    } while (!message_received);
 
     sequence_number = (sequence_number + 1) % 2;
 

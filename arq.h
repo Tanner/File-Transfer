@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 
 #include "utilities.h"
