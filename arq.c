@@ -46,13 +46,22 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
 ssize_t arq_recvfrom(int sock, void *buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len) {
     int size = recvfrom(sock, buffer, len, flags, src_addr, (socklen_t *) addr_len);
 
-    arq_ack(sock, src_addr, *addr_len);
+    int split_size = 0;
+    char **split_buffer = split(buffer, " ", &split_size);
+
+    if (split_size <= 0) {
+        fprintf(stderr, "Did not receive a sequence number.\n");
+    }
+
+    arq_ack(sock, atoi(split_buffer[0]), src_addr, *addr_len);
     
     return size;
 }
 
-ssize_t arq_ack(int sock, struct sockaddr *dest_addr, int addr_len) {
-    char *buffer = "ACK";
+ssize_t arq_ack(int sock, int sequence_number, struct sockaddr *dest_addr, int addr_len) {
+    char buffer[BUFFER_MAX_SIZE];
+
+    sprintf(buffer, "ACK %d", sequence_number);
 
     int size = sendto_dropper(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
 
