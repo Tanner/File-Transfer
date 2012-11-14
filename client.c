@@ -77,6 +77,8 @@ int main(int argc, char *argv[]) {
 
     // Receive the file from the server
     do {
+        memset(buffer, 0, BUFFER_MAX_SIZE);
+
         arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, 0, 0);
 
         printf("Received: %s\n", buffer);
