@@ -58,13 +58,36 @@ int main(int argc, char *argv[]) {
 	server_address.sin_addr.s_addr = inet_addr(server_ip);
 	server_address.sin_port = htons(server_port);
 
-    for (int i = 0; i < 10; i++) {
-        char buffer[512];
-        memset(buffer, 0, 512);
-        sprintf(buffer, "Number %d", i);
+    char buffer[BUFFER_MAX_SIZE];
+    struct timeval tv;
+    time_t start_time, end_time;
 
-        arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address));
+    gettimeofday(&tv, 0);
+    start_time = tv.tv_sec;
+
+    if (debug) {
+        printf("Requesting file from server.\n");
     }
+
+    // Request the file from the server
+    sprintf(buffer, "REQUEST %s", remote_filename);
+    arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address));
+
+    printf("Starting transfer...\n");
+
+    // Receive the file from the server
+    do {
+        arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, 0, 0);
+
+        printf("Received: %s\n", buffer);
+    } while (strcmp(buffer, "EOF") == 0);
+
+    printf("Transfer complete.\n");
+
+    gettimeofday(&tv, 0);
+    end_time = tv.tv_sec;
+
+    printf("Transfer took %d second(s)\n", (int) (end_time - start_time));
 
     close(sock);
 
