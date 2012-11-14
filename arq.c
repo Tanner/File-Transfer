@@ -42,7 +42,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
             printf("Sending: %s\n", (char *) seq_buffer);
         }
         
-        size = sendto_dropper(sock, seq_buffer, len, flags, dest_addr, addr_len);
+        size = sendto_dropper(sock, seq_buffer, strlen(seq_buffer), flags, dest_addr, addr_len);
 
         gettimeofday(&tv, 0);
         sent_time = tv.tv_sec;
