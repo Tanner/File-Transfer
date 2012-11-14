@@ -12,6 +12,8 @@
 
 #define MAX_PENDING 5
 
+void send_error(int sock, struct sockaddr *dest_addr, int addr_len);
+
 int main(int argc, char *argv[])
 {
 	int sock;
@@ -70,8 +72,44 @@ int main(int argc, char *argv[])
             exit(2);
         }
 
-        printf("Handling client %s\n", inet_ntoa(client_address.sin_addr));
+        int split_size = 0;
+        char **split_buffer = split(buffer, " ", &split_size);
 
-        //arq_sendto(sock, buffer, message_size, 0, (struct sockaddr *) &client_address, sizeof(client_address));
-	}
+        char *client = inet_ntoa(client_address.sin_addr);
+
+        printf("%s - Received: '%s'\n", client, buffer);
+
+        if (split_size > 0) {
+            // Handle REQUEST
+            if (strcmp(split_buffer[0], "REQUEST") == 0) {
+                if (split_size >= 2) {
+                    // Got a request with a file name
+                    char *file = split_buffer[1];
+
+                    FILE *fp = fopen(file, "r");
+
+                    if (!fp) {
+                        // Oh no the file error
+                        printf("%s - Could not open file %s\n", client, file);
+
+                        send_error(sock, (struct sockaddr *) &client_address, client_address_size);
+                    }
+                } else {
+                    printf("%s - Incorrect arguments for REQUEST.\n", client);
+
+                    send_error(sock, (struct sockaddr *) &client_address, client_address_size);
+                }
+            } else {
+                printf("%s - Unknown command.\n", client);
+            }
+        } else {
+            printf("%s - Unsure what to do.\n", client);
+        }
+    }
+}
+
+void send_error(int sock, struct sockaddr *dest_addr, int addr_len) {
+    char *buffer = "ERROR";
+
+    arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
 }
