@@ -85,6 +85,7 @@ ssize_t arq_recvfrom(int sock, void *buffer, size_t len, int flags, struct socka
         printf("Received: %s\n", (char *) buffer);
     }
 
+    // Respond with an ACK for the sequence number
     int split_size = 0;
     char **split_buffer = split(buffer, " ", &split_size);
 
@@ -93,6 +94,9 @@ ssize_t arq_recvfrom(int sock, void *buffer, size_t len, int flags, struct socka
     }
 
     arq_ack(sock, atoi(split_buffer[0]), src_addr, *addr_len);
+
+    // Strip out sequence number for buffer that the user will read
+    buffer = &buffer + sizeof(void *) * 2;
     
     return size;
 }
