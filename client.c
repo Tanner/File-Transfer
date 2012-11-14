@@ -82,6 +82,14 @@ int main(int argc, char *argv[]) {
         arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, 0, 0);
 
         printf("Received: %s\n", buffer);
+
+        // Error checking
+        if (strcmp(buffer, "ERROR") == 0) {
+            printf("Server returned an error. Exiting.\n");
+
+            close(sock);
+            exit(2);
+        }
     } while (strcmp(buffer, "EOF") == 0);
 
     printf("Transfer complete.\n");
