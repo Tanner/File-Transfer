@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 	server_address.sin_addr.s_addr = inet_addr(server_ip);
 	server_address.sin_port = htons(server_port);
 
-    char buffer[BUFFER_MAX_SIZE];
+    char *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
     struct timeval tv;
     time_t start_time, end_time;
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 
     // Receive the file from the server
     do {
-        arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, 0, 0);
+        arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, 0, 0);
 
         printf("Received: %s\n", buffer);
     } while (strcmp(buffer, "EOF") == 0);
