@@ -29,8 +29,6 @@ char ** split(char *input, char *delimiter, int *size) {
 		count++;
 	} while (temp);
 
-	free(input_copy);
-
 	// Create an array of that size (to hold all the chunks)
 
 	char **split = calloc(count, sizeof(char *));
@@ -39,8 +37,9 @@ char ** split(char *input, char *delimiter, int *size) {
 	*size = count;
 
 	// Begin to assign the chunks into the array
+	strncpy(input_copy, input, strlen(input));
 
-	temp = strtok(input, delimiter);
+	temp = strtok(input_copy, delimiter);
 
 	for (int i = 0; i < count; i++) {
 		if (temp != NULL) {
@@ -52,6 +51,8 @@ char ** split(char *input, char *delimiter, int *size) {
 
 		temp = strtok(NULL, delimiter);
 	}
+
+	free(input_copy);
 
 	return split;
 }
