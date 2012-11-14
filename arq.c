@@ -79,6 +79,22 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
 }
 
 ssize_t arq_recvfrom(int sock, char **buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len) {
+    // Set up src_addr or addr_len if they are null (which is allowed by recvfrom usually)
+    int src_addr_malloc = 0;
+    int addr_len_malloc = 0;
+
+    if (src_addr == 0) {
+        src_addr = malloc(sizeof(struct sockaddr));
+        src_addr_malloc = 1;
+    }
+
+    if (addr_len == 0) {
+        addr_len = malloc(sizeof(int));
+        addr_len_malloc = 1;
+
+        *addr_len = sizeof(src_addr);
+    }
+
     int size = recvfrom(sock, *buffer, len, flags, src_addr, (socklen_t *) addr_len);
 
     if (debug) {
@@ -93,10 +109,21 @@ ssize_t arq_recvfrom(int sock, char **buffer, size_t len, int flags, struct sock
         fprintf(stderr, "Did not receive a sequence number.\n");
     }
 
-    arq_ack(sock, atoi(split_buffer[0]), src_addr, *addr_len);
+    if ((arq_ack(sock, atoi(split_buffer[0]), src_addr, *addr_len)) < 0) {
+        fprintf(stderr, "Could not send ACK.\n");
+    }
 
     // Strip out sequence number for buffer that the user will read
     *buffer = *buffer + sizeof(char) * 2;
+
+    // Free anything alloc'd
+    if (src_addr_malloc) {
+        free(src_addr);
+    }
+
+    if (addr_len_malloc) {
+        free(addr_len);
+    }
     
     return size;
 }
