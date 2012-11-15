@@ -100,11 +100,21 @@ int main(int argc, char *argv[]) {
             strncpy(data, buffer + 5, strlen(buffer) - 4);
 
             if (fwrite(data, strlen(data), 1, fp) != 1) {
-                printf("Error writing to file. Exiting.\n");
+                printf("Error writing to file.\n");
+                printf("Terminating connection\n");
+
+                strcpy(buffer, "BYE");
+                arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address));
+
+                printf("Connection terminated\n");
 
                 close(sock);
                 exit(2);
             }
+
+            // Ready to continue
+            strcpy(buffer, "READY");
+            arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address));
         } else {
             if (debug) {
                 printf("Unkown response type.\n");
