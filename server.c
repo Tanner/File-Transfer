@@ -105,7 +105,8 @@ int main(int argc, char *argv[])
 
                         if (feof(fp) != 0) {
                             // End of file was reached
-                            printf("%s - EOF reached; terminating connection\n", client); 
+                            printf("%s - EOF reached\n", client); 
+                            printf("%s - Terminating connection\n", client); 
 
                             memset(buffer, 0, BUFFER_MAX_SIZE);
                             buffer = "EOF";
@@ -116,8 +117,11 @@ int main(int argc, char *argv[])
                         } else if (ferror(fp) != 0) {
                             // An error occurred
                             printf("%s - Error occurred while reading file %s\n", client, file);
+                            printf("%s - Terminating connection\n", client); 
 
                             send_error(sock, (struct sockaddr *) &client_address, client_address_size);
+
+                            printf("%s - Connection terminated\n", client);
                         }
                     }
                 } else {
