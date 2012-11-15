@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
             exit(2);
         }
 
-        char *temp = calloc(4, sizeof(char));
+        char *temp = calloc(5, sizeof(char));
         strncpy(temp, buffer, 4 * sizeof(char));
         
         if (strcmp(temp, "SEND") == 0) {
