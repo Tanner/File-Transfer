@@ -77,8 +77,6 @@ int main(int argc, char *argv[])
 
         char *client = inet_ntoa(client_address.sin_addr);
 
-        printf("%s - Received: '%s'\n", client, buffer);
-
         if (split_size > 0) {
             // Handle REQUEST
             if (strcmp(split_buffer[0], "REQUEST") == 0) {
@@ -89,6 +87,8 @@ int main(int argc, char *argv[])
                     FILE *fp = fopen(file, "r");
                     void *chunk = calloc(5, sizeof(char));
 
+                    printf("%s - Received request for %s\n", client, file);
+
                     if (!fp) {
                         // Oh no the file error
                         printf("%s - Could not open file %s\n", client, file);
@@ -96,6 +96,8 @@ int main(int argc, char *argv[])
                         send_error(sock, (struct sockaddr *) &client_address, client_address_size);
                     } else {
                         // File was opened successfully
+                        printf("%s - Starting transfer\n", client);
+
                         while (fread(chunk, 5, 1, fp) > 0) {
                             memset(buffer, 0, BUFFER_MAX_SIZE);
                             sprintf(buffer, "SEND %s", (char *) chunk);
@@ -116,7 +118,7 @@ int main(int argc, char *argv[])
 
                         if (feof(fp) != 0) {
                             // End of file was reached
-                            printf("%s - EOF reached\n", client); 
+                            printf("%s - Transfer complete\n", client); 
                             printf("%s - Terminating connection\n", client); 
 
                             memset(buffer, 0, BUFFER_MAX_SIZE);
