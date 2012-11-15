@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
             close(sock);
             exit(2);
         }
-    } while (strcmp(buffer, "EOF") == 0);
+    } while (strcmp(buffer, "EOF") != 0);
 
     printf("Transfer complete.\n");
 
