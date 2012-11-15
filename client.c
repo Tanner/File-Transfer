@@ -75,13 +75,13 @@ int main(int argc, char *argv[]) {
 
     printf("Starting transfer...\n");
 
+    FILE *fp = fopen(local_filename, "w");
+
     // Receive the file from the server
     do {
         memset(buffer, 0, BUFFER_MAX_SIZE);
 
         arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, 0, 0);
-
-        printf("Received: %s\n", buffer);
 
         // Error checking
         if (strcmp(buffer, "ERROR") == 0) {
@@ -89,6 +89,26 @@ int main(int argc, char *argv[]) {
 
             close(sock);
             exit(2);
+        }
+
+        char *temp = calloc(4, sizeof(char));
+        strncpy(temp, buffer, 4 * sizeof(char));
+        
+        if (strcmp(temp, "SEND") == 0) {
+            // SEND detected; extract data
+            char *data = malloc(sizeof(char) * (strlen(buffer) - 4));
+            strncpy(data, buffer + 5, strlen(buffer) - 4);
+
+            if (fwrite(data, strlen(data), 1, fp) != 1) {
+                printf("Error writing to file. Exiting.\n");
+
+                close(sock);
+                exit(2);
+            }
+        } else {
+            if (debug) {
+                printf("Unkown response type.\n");
+            }
         }
     } while (strcmp(buffer, "EOF") != 0);
 
