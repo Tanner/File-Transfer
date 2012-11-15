@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
                             printf("%s - Terminating connection\n", client); 
 
                             memset(buffer, 0, BUFFER_MAX_SIZE);
-                            buffer = "EOF";
+                            strcpy(buffer, "EOF");
 
                             arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size);
 
