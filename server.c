@@ -154,5 +154,8 @@ int main(int argc, char *argv[])
 void send_error(int sock, struct sockaddr *dest_addr, int addr_len) {
     char *buffer = "ERROR";
 
-    arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
+    if (arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len) == -1) {
+        fprintf(stderr, "Could not send error to client.\n");
+        exit(2);
+    }
 }
