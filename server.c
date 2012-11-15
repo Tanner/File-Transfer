@@ -87,12 +87,38 @@ int main(int argc, char *argv[])
                     char *file = split_buffer[1];
 
                     FILE *fp = fopen(file, "r");
+                    void *chunk = calloc(5, sizeof(char));
 
                     if (!fp) {
                         // Oh no the file error
                         printf("%s - Could not open file %s\n", client, file);
 
                         send_error(sock, (struct sockaddr *) &client_address, client_address_size);
+                    } else {
+                        // File was opened successfully
+                        while (fread(chunk, 5, 1, fp) > 0) {
+                            memset(buffer, 0, BUFFER_MAX_SIZE);
+                            sprintf(buffer, "SEND %s", (char *) chunk);
+
+                            arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size);
+                        }
+
+                        if (feof(fp) != 0) {
+                            // End of file was reached
+                            printf("%s - EOF reached; terminating connection\n", client); 
+
+                            memset(buffer, 0, BUFFER_MAX_SIZE);
+                            buffer = "EOF";
+
+                            arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size);
+
+                            printf("%s - Connection terminated\n", client);
+                        } else if (ferror(fp) != 0) {
+                            // An error occurred
+                            printf("%s - Error occurred while reading file %s\n", client, file);
+
+                            send_error(sock, (struct sockaddr *) &client_address, client_address_size);
+                        }
                     }
                 } else {
                     printf("%s - Incorrect arguments for REQUEST.\n", client);
