@@ -1,9 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
                     char *file = split_buffer[1];
 
                     FILE *fp = fopen(file, "r");
-                    void *chunk = calloc(5, sizeof(char));
+                    void *chunk = calloc(6, sizeof(char));
 
                     printf("%s - Received request for %s\n", client, file);
 
