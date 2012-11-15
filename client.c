@@ -115,9 +115,10 @@ int main(int argc, char *argv[]) {
             // Ready to continue
             strcpy(buffer, "READY");
             arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address));
-        } else {
+        } else if (strcmp(buffer, "EOF") != 0) {
             if (debug) {
                 printf("Unkown response type.\n");
+                printf("Received: %s\n", buffer);
             }
         }
     } while (strcmp(buffer, "EOF") != 0);
