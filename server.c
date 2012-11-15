@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	while(1) {
 		client_address_size = sizeof(client_address);
 
-        if ((message_size = arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
+        if ((message_size = arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
             fprintf(stderr, "Could not receive message from client.");
             exit(2);
         }
@@ -99,13 +99,13 @@ int main(int argc, char *argv[])
                         printf("%s - Starting transfer\n", client);
 
                         while (fread(chunk, 5, 1, fp) > 0) {
-                            memset(buffer, 0, BUFFER_MAX_SIZE);
+                            memset(buffer, 0, sizeof(char) * BUFFER_MAX_SIZE);
                             sprintf(buffer, "SEND %s", (char *) chunk);
 
                             arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size);
-
+                            
                             memset(buffer, 0, BUFFER_MAX_SIZE);
-                            if ((message_size = arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
+                            if ((message_size = arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
                                 fprintf(stderr, "Could not receive message from client.");
                                 exit(2);
                             }
@@ -149,6 +149,8 @@ int main(int argc, char *argv[])
             printf("%s - Unsure what to do.\n", client);
         }
     }
+
+    free(buffer);
 }
 
 void send_error(int sock, struct sockaddr *dest_addr, int addr_len) {
