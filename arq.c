@@ -138,10 +138,18 @@ EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, str
         fprintf(stderr, "Could not send ACK.\n");
     }
 
-    // Strip out sequence number for buffer that the user will read
-    // *buffer = *buffer + sizeof(char) * 2;
-    for (int i = 0; i < len - 2; i++) {
-        buffer[i] = buffer[i + 2];
+    // Strip out sequence number and messages remaining from buffer that the user will read
+    free(*buffer);
+
+    *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+    memset(*buffer, 0, BUFFER_MAX_SIZE);
+
+    for (int i = 2; i < split_size; i++) {
+        if (i == 2) {
+            sprintf(*buffer, "%s", split_buffer[i]);
+        } else {
+            sprintf(*buffer, "%s %s", *buffer, split_buffer[i]);
+        }
     }
 
     // Create EXPECT struct
