@@ -11,6 +11,8 @@
 #ifndef __ARQ_H__
 #define __ARQ_H__
 
+#define MIN_PACKET_SIZE 5   // Length of 'ACK #'
+
 int debug;
 
 int arq_init(int loss_percentage);

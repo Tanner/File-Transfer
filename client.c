@@ -38,6 +38,13 @@ int main(int argc, char *argv[]) {
         exit(2);
     }
 
+    // Check max_packet_size
+    if (max_packet_size < MIN_PACKET_SIZE) {
+        fprintf(stderr, "Max packet size too small - minimum is %d bytes.\n", MIN_PACKET_SIZE);
+        
+        exit(2);
+    }
+
     if (debug) {
         printf("Remote Filename: %s\n", remote_filename);
         printf("Local Filename: %s\n", local_filename);
