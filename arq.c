@@ -79,6 +79,15 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
 }
 
 ssize_t arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len) {
+    EXPECT *expect = arq_recvfrom_expect(sock, buffer, len, flags, src_addr, addr_len, 0);
+    int size = expect->size;
+
+    free(expect);
+
+    return size;
+}
+
+EXPECT * arq_recvfrom_expect(int sock, char *buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len, int expect_handled) {
     // Set up src_addr or addr_len if they are null (which is allowed by recvfrom usually)
     int src_addr_malloc = 0;
     int addr_len_malloc = 0;
@@ -105,11 +114,14 @@ ssize_t arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct socka
     int split_size = 0;
     char **split_buffer = split(buffer, " ", &split_size);
 
-    if (split_size <= 0) {
-        fprintf(stderr, "Did not receive a sequence number.\n");
+    if (split_size >= 3) {
+        fprintf(stderr, "Did not receive a properly formatted message.\n");
     }
 
-    if ((arq_ack(sock, atoi(split_buffer[0]), src_addr, *addr_len)) < 0) {
+    int recv_sequence_number = atoi(split_buffer[0]);
+    int recv_messages_remaining = atoi(split_buffer[1]);
+
+    if ((arq_ack(sock, recv_sequence_number, src_addr, *addr_len)) < 0) {
         fprintf(stderr, "Could not send ACK.\n");
     }
 
@@ -117,6 +129,27 @@ ssize_t arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct socka
     // *buffer = *buffer + sizeof(char) * 2;
     for (int i = 0; i < len - 2; i++) {
         buffer[i] = buffer[i + 2];
+    }
+
+    // Create EXPECT struct
+    EXPECT *expect = malloc(sizeof(EXPECT));
+    expect->size = size;
+    expect->messages_remaining = recv_messages_remaining;
+    
+    // Check to see if we need to handle more messages
+    if (!expect_handled) {
+        while (expect->messages_remaining > 0) {
+            void *temp_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+
+            EXPECT *temp_expect = arq_recvfrom_expect(sock, temp_buffer, BUFFER_MAX_SIZE, flags, 0, 0, 1);
+
+            buffer = realloc(buffer, BUFFER_MAX_SIZE + BUFFER_MAX_SIZE);
+            buffer = memcpy(buffer, temp_buffer, temp_expect->size);
+
+            expect->messages_remaining = temp_expect->messages_remaining;
+
+            free(temp_expect);
+        }
     }
 
     // Free anything alloc'd
@@ -128,7 +161,7 @@ ssize_t arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct socka
         free(addr_len);
     }
     
-    return size;
+    return expect;
 }
 
 ssize_t arq_ack(int sock, int sequence_number, struct sockaddr *dest_addr, int addr_len) {
