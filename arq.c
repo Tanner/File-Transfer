@@ -3,17 +3,25 @@
 #define ACK_TIMEOUT 2       // Number of seconds to wait for an ACK
 
 static int sequence_number;
+static int max_packet_size;
 
-int arq_init(int loss_percentage) {
+int arq_init(int loss_percentage, int max_packet_size_temp) {
     sequence_number = 0;
 
     if (set_dropper(loss_percentage) < 0) {
         return -1;
     }
 
+    if (max_packet_size_temp <= 0) {
+        max_packet_size = -1;
+    } else {
+        max_packet_size = max_packet_size_temp;
+    }
+
     if (debug) {
         printf("Sequence Number: %d\n", sequence_number);
         printf("Loss Percentage: %d%%\n", loss_percentage);
+        printf("Max Packet Size: %d byte(s)\n", max_packet_size);
     }
 
     return 1;

@@ -31,17 +31,17 @@ int main(int argc, char *argv[]) {
         debug = 1;
     }
 
-    // Set up ARQ with loss_percentage
-    if (arq_init(loss_percentage) < 0) {
-        fprintf(stderr, "Unable to set up ARQ\n");
-        fprintf(stderr, "Invalid loss percentage - Must be between 0 and 100.\n");
-        exit(2);
-    }
-
     // Check max_packet_size
     if (max_packet_size < MIN_PACKET_SIZE) {
         fprintf(stderr, "Max packet size too small - minimum is %d bytes.\n", MIN_PACKET_SIZE);
         
+        exit(2);
+    }
+
+    // Set up ARQ with loss_percentage and max packet size
+    if (arq_init(loss_percentage, max_packet_size) < 0) {
+        fprintf(stderr, "Unable to set up ARQ\n");
+        fprintf(stderr, "Invalid loss percentage - Must be between 0 and 100.\n");
         exit(2);
     }
 

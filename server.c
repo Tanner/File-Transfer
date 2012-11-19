@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
         debug = 1;
     }
 
-    // Set up ARQ with loss_percentage
-    if (arq_init(loss_percentage) < 0) {
+    // Set up ARQ with loss_percentage and max packet size
+    if (arq_init(loss_percentage, 0) < 0) {
         fprintf(stderr, "Unable to set up ARQ\n");
         fprintf(stderr, "Invalid loss percentage - Must be between 0 and 100.\n");
         exit(2);

@@ -20,7 +20,7 @@ typedef struct _EXPECT {
     int messages_remaining;
 } EXPECT;
 
-int arq_init(int loss_percentage);
+int arq_init(int loss_percentage, int max_packet_size);
 
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len);
 
