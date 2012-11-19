@@ -38,10 +38,15 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     
     memset(recv_buffer, 0, BUFFER_MAX_SIZE);
 
-    // Format message to send with sequence number
+    // Format message to send with sequence number and messages remaining
     void *seq_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
 
-    sprintf(seq_buffer, "%d ", sequence_number);
+    sprintf(seq_buffer, "%d %d ", sequence_number, 0);
+
+    if (strlen(seq_buffer) + strlen(buffer) > max_packet_size) {
+        // Split up the message
+    }
+
     strncat(seq_buffer, buffer, BUFFER_MAX_SIZE - strlen(seq_buffer));
 
     // Send the message and see if we get an ACK
