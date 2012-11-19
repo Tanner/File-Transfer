@@ -154,6 +154,7 @@ EXPECT * arq_recvfrom_expect(int sock, char *buffer, size_t len, int flags, stru
             buffer = realloc(buffer, BUFFER_MAX_SIZE + BUFFER_MAX_SIZE);
             buffer = memcpy(buffer, temp_buffer, temp_expect->size);
 
+            expect->size = temp_expect->size;
             expect->messages_remaining = temp_expect->messages_remaining;
 
             free(temp_expect);
