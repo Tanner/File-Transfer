@@ -13,7 +13,7 @@ int arq_init(int loss_percentage) {
 
     if (debug) {
         printf("Sequence Number: %d\n", sequence_number);
-        printf("Loss Percentage: %d\n", loss_percentage);
+        printf("Loss Percentage: %d%%\n", loss_percentage);
     }
 
     return 1;

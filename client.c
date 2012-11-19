@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     if (debug) {
         printf("Remote Filename: %s\n", remote_filename);
         printf("Local Filename: %s\n", local_filename);
-        printf("Max Packet Size: %d\n", max_packet_size);
+        printf("Max Packet Size: %d byte(s)\n", max_packet_size);
     }
 
 	// Create a socket using UDP
