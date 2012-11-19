@@ -122,7 +122,7 @@ EXPECT * arq_recvfrom_expect(int sock, char *buffer, size_t len, int flags, stru
     int split_size = 0;
     char **split_buffer = split(buffer, " ", &split_size);
 
-    if (split_size >= 3) {
+    if (split_size < 3) {
         fprintf(stderr, "Did not receive a properly formatted message.\n");
     }
 
