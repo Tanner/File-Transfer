@@ -24,8 +24,8 @@ int arq_init(int loss_percentage, int max_packet_size);
 
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len);
 
-ssize_t arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len);
-EXPECT * arq_recvfrom_expect(int sock, char *buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len, int expect_handled);
+ssize_t arq_recvfrom(int sock, char **buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len);
+EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len, int expect_handled);
 
 ssize_t arq_ack(int sock, int sequence_number, struct sockaddr *dest_addr, int addr_len);
 

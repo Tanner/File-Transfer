@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     do {
         memset(buffer, 0, BUFFER_MAX_SIZE);
 
-        arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, 0, 0);
+        arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, 0, 0);
 
         // Error checking
         if (strcmp(buffer, "ERROR") == 0) {
