@@ -11,7 +11,7 @@
 #ifndef __ARQ_H__
 #define __ARQ_H__
 
-#define MIN_PACKET_SIZE 5   // Length of 'ACK #'
+#define MIN_PACKET_SIZE 6   // Length of 'ACK # 0'
 
 int debug;
 
