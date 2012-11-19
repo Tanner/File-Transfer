@@ -1,6 +1,6 @@
 #include "arq.h"
 
-#define ACK_TIMEOUT 2
+#define ACK_TIMEOUT 2       // Number of seconds to wait for an ACK
 
 static int sequence_number;
 
