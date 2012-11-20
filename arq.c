@@ -53,6 +53,16 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
 
     if (strlen(seq_buffer) + strlen(buffer) > max_packet_size) {
         // Split up the message
+        int usable_size = max_packet_size - strlen(seq_buffer);
+
+        int split_size = 0;
+        char **split_buffer = arq_split_up_message(buffer, usable_size, &split_size);
+
+        for (int i = 0; i < split_size; i++) {
+            printf("SPLIT: %s\n", split_buffer[i]);
+        }
+
+        free(split_buffer);
     }
 
     strncat(seq_buffer, buffer, BUFFER_MAX_SIZE - strlen(seq_buffer));
@@ -220,4 +230,20 @@ ssize_t arq_ack(int sock, int sequence_number, struct sockaddr *dest_addr, int a
     }
 
     return size;
+}
+
+char ** arq_split_up_message(char *input, int chunk_size, int *size) {
+    *size = ceil((double) strlen(input) / chunk_size);
+
+    char **split = calloc(*size, sizeof(char *));
+    assert(split);
+
+    for (int i = 0; i < *size; i++) {
+        split[i] = malloc(sizeof(char) * chunk_size);
+        assert(split[i]);
+
+        split[i] = strncpy(split[i], input + chunk_size * i, chunk_size);
+    }
+
+    return split;
 }

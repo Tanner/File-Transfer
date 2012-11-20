@@ -1,5 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Werror -ansi -pedantic -std=c99
+LIBS = -lm
 
 RELEASE_FLAGS = -O2
 DEBUG_FLAGS = -g -DDEBUG
@@ -20,10 +21,10 @@ debug-server: CFLAGS += $(DEBUG_FLAGS)
 debug-server: $(SERVER_TARGET)
 
 $(CLIENT_TARGET) : $(CLIENT_OBJ)
-	$(CC) $(CFLAGS) -o $(CLIENT_TARGET) $(CLIENT_OBJ)
+	$(CC) $(CFLAGS) -o $(CLIENT_TARGET) $(CLIENT_OBJ) $(LIBS)
 
 $(SERVER_TARGET) : $(SERVER_OBJ)
-	$(CC) $(CFLAGS) -o $(SERVER_TARGET) $(SERVER_OBJ)
+	$(CC) $(CFLAGS) -o $(SERVER_TARGET) $(SERVER_OBJ) $(LIBS)
 
 %.o : %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<

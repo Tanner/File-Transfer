@@ -1,7 +1,9 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <errno.h>
+#include <math.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 
@@ -30,5 +32,7 @@ ssize_t arq_recvfrom(int sock, char **buffer, size_t len, int flags, struct sock
 EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len, int expect_handled);
 
 ssize_t arq_ack(int sock, int sequence_number, struct sockaddr *dest_addr, int addr_len);
+
+char ** arq_split_up_message(char *input, int chunk_size, int *size);
 
 #endif
