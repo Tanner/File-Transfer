@@ -23,7 +23,6 @@ typedef struct _EXPECT {
 int arq_init(int loss_percentage, int max_packet_size);
 
 ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len);
-void arq_inform_recv(int sock);
 
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len);
 
