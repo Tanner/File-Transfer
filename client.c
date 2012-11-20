@@ -69,6 +69,9 @@ int main(int argc, char *argv[]) {
     struct timeval tv;
     time_t start_time, end_time;
 
+    // Inform server of max packet size
+    arq_inform_send(sock, (struct sockaddr *) &server_address, sizeof(server_address));
+
     gettimeofday(&tv, 0);
     start_time = tv.tv_sec;
 

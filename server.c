@@ -61,6 +61,8 @@ int main(int argc, char *argv[])
 
 	printf("Server started...\n");
 
+    arq_inform_recv(sock);
+
     int message_size;
     char *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
 

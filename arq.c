@@ -27,6 +27,42 @@ int arq_init(int loss_percentage, int max_packet_size_temp) {
     return 1;
 }
 
+ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
+    char buffer[BUFFER_MAX_SIZE];
+
+    sprintf(buffer, "MPS %d", max_packet_size);
+
+    return arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
+}
+
+void arq_inform_recv(int sock) {
+    char *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+
+    arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, 0, 0);
+
+    int split_size = 0;
+    char **split_buffer = split(buffer, " ", &split_size);
+
+    if (split_size == 2) {
+        if (strcmp(split_buffer[0], "MPS") == 0) {
+            max_packet_size = atoi(split_buffer[1]);
+
+            if (debug) {
+                printf("Updated max packet size to %d byte(s)\n", max_packet_size);
+            }
+
+            free(buffer);
+
+            return;
+        }
+    }
+
+    free(buffer);
+
+    fprintf(stderr, "Received malformed inform message.");
+    exit(2);
+}
+
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len) {
     struct timeval tv;
     time_t sent_time;
