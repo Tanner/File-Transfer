@@ -198,12 +198,13 @@ EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, str
     // Check to see if we need to handle more messages
     if (!expect_handled) {
         while (expect->messages_remaining > 0) {
-            void *temp_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+            char *temp_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+            assert(temp_buffer);
 
-            EXPECT *temp_expect = arq_recvfrom_expect(sock, temp_buffer, BUFFER_MAX_SIZE, flags, 0, 0, 1);
+            EXPECT *temp_expect = arq_recvfrom_expect(sock, &temp_buffer, BUFFER_MAX_SIZE, flags, src_addr, addr_len, 1);
 
-            buffer = realloc(buffer, BUFFER_MAX_SIZE + BUFFER_MAX_SIZE);
-            buffer = memcpy(buffer, temp_buffer, temp_expect->size);
+            *buffer = realloc(*buffer, BUFFER_MAX_SIZE + BUFFER_MAX_SIZE);
+            *buffer = memcpy(*buffer, temp_buffer, temp_expect->size);
 
             expect->size = temp_expect->size;
             expect->messages_remaining = temp_expect->messages_remaining;
