@@ -148,18 +148,11 @@ EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, str
     MESSAGE *message = message_decode(buffer);
 
     if (debug) {
-        printf("Received: %s\n", (char *) message->message);
+        printf("Received: %d %s\n", message->sequence_number, message->message);
     }
 
     // Respond with an ACK for the sequence number
-    int split_size = 0;
-    char **split_buffer = split(message->message, " ", &split_size);
-
-    if (split_size < 3) {
-        fprintf(stderr, "Did not receive a properly formatted message.\n");
-    }
-
-    if ((arq_ack(sock, atoi(split_buffer[0]), src_addr, *addr_len)) <= 0) {
+    if ((arq_ack(sock, message->sequence_number, src_addr, *addr_len)) <= 0) {
         fprintf(stderr, "Could not send ACK.\n");
     }
 
