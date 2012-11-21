@@ -238,7 +238,7 @@ char ** arq_split_up_message(char *input, int chunk_size, int *size) {
     // Change the chunk_size and size appropriately if the size is no longer a single digit
     int num_digits = 1 + floor(log(*size) / log(10));
 
-    if (num_digits > 1) {
+    if (num_digits > 1 && chunk_size > 1) {
         chunk_size -= (num_digits - 1);
 
         *size = ceil((double) strlen(input) / chunk_size);
