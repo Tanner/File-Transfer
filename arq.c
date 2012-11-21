@@ -110,7 +110,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
             printf("Max number of resends exceeded. Giving up.\n");
         }
 
-        return 0;
+        return -1;
     }
 
     sequence_number = (sequence_number + 1) % 2;
