@@ -67,7 +67,8 @@ int main(int argc, char *argv[]) {
 
     char *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
     struct timeval tv;
-    time_t start_time, end_time;
+    time_t start_time_s, end_time_s;
+    time_t start_time_ms, end_time_ms;
 
     // Inform server of max packet size
     if (arq_inform_send(sock, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
@@ -78,7 +79,8 @@ int main(int argc, char *argv[]) {
     }
 
     gettimeofday(&tv, 0);
-    start_time = tv.tv_sec;
+    start_time_s = tv.tv_sec;
+    start_time_ms = tv.tv_usec / 1000;
 
     if (debug) {
         printf("Requesting file from server.\n");
@@ -138,9 +140,10 @@ int main(int argc, char *argv[]) {
     printf("Transfer complete.\n");
 
     gettimeofday(&tv, 0);
-    end_time = tv.tv_sec;
+    end_time_s = tv.tv_sec;
+    end_time_ms = tv.tv_usec / 1000;
 
-    printf("Transfer took %d second(s)\n", (int) (end_time - start_time));
+    printf("Transfer took %d second(s) and %d millisecond(s)\n", (int) (end_time_s - start_time_s), (int) (end_time_ms - start_time_ms));
 
     close(sock);
 
