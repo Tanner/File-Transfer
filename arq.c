@@ -172,7 +172,7 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
     int size = sendto_dropper(sock, package, package_size, 0, dest_addr, addr_len);
 
     if (debug) {
-        printf("Sent %d ACK %d\n", sequence_number, sequence_number_ack);
+        printf("Sending: %d ACK %d\n", sequence_number, sequence_number_ack);
     }
 
     return size;
