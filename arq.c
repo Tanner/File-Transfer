@@ -177,28 +177,3 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
 
     return size;
 }
-
-char ** arq_split_up_message(char *input, int chunk_size, int *size) {
-    *size = ceil((double) strlen(input) / chunk_size);
-
-    // Change the chunk_size and size appropriately if the size is no longer a single digit
-    int num_digits = 1 + floor(log(*size) / log(10));
-
-    if (num_digits > 1 && chunk_size > 1) {
-        chunk_size -= (num_digits - 1);
-
-        *size = ceil((double) strlen(input) / chunk_size);
-    }
-
-    char **split = calloc(*size, sizeof(char *));
-    assert(split);
-
-    for (int i = 0; i < *size; i++) {
-        split[i] = malloc(sizeof(char) * chunk_size);
-        assert(split[i]);
-
-        split[i] = strncpy(split[i], input + chunk_size * i, chunk_size);
-    }
-
-    return split;
-}
