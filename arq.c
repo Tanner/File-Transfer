@@ -36,9 +36,13 @@ ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
 }
 
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len) {
+    return arq_sendto_assist(sock, buffer, len, flags, dest_addr, addr_len, -1);
+}
+
+ssize_t arq_sendto_assist(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len, int messages_remaining) {
     struct timeval tv;
     time_t sent_time;
-    int size;
+    int size = 0;
     char recv_buffer[BUFFER_MAX_SIZE];
     int recv_buffer_size;
 
@@ -49,20 +53,32 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     // Format message to send with sequence number and messages remaining
     void *seq_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
 
-    sprintf(seq_buffer, "%d %d ", sequence_number, 0);
+    sprintf(seq_buffer, "%d %d ", sequence_number, messages_remaining);
 
-    if (strlen(seq_buffer) + strlen(buffer) > max_packet_size) {
-        // Split up the message
-        int usable_size = max_packet_size - strlen(seq_buffer);
+    if (messages_remaining == -1) {
+        // Message has not been determined whether or not it needs to be broken up
+        if (strlen(seq_buffer) + strlen(buffer) > max_packet_size) {
+            // Split up the message
+            int usable_size = max_packet_size - strlen(seq_buffer);
 
-        int split_size = 0;
-        char **split_buffer = arq_split_up_message(buffer, usable_size, &split_size);
+            int split_size = 0;
+            char **split_buffer = arq_split_up_message(buffer, usable_size, &split_size);
 
-        for (int i = 0; i < split_size; i++) {
-            printf("SPLIT: %s\n", split_buffer[i]);
+            for (int i = 0; i < split_size; i++) {
+                size += arq_sendto_assist(sock, split_buffer[i], strlen(split_buffer[i]), flags, dest_addr, addr_len, split_size - i - 1);
+            }
+
+            free(split_buffer);
+            free(seq_buffer);
+
+            return size;
+        } else {
+            // Don't need to split up the message
+            messages_remaining = 0;
+
+            memset(seq_buffer, 0, BUFFER_MAX_SIZE);
+            sprintf(seq_buffer, "%d %d ", sequence_number, messages_remaining);
         }
-
-        free(split_buffer);
     }
 
     strncat(seq_buffer, buffer, BUFFER_MAX_SIZE - strlen(seq_buffer));
