@@ -5,10 +5,10 @@ LIBS = -lm
 RELEASE_FLAGS = -O2
 DEBUG_FLAGS = -g -DDEBUG
 
-CLIENT_OBJ = client.o dropper.o arq.o utilities.o
+CLIENT_OBJ = client.o dropper.o arq.o utilities.o message.o
 CLIENT_TARGET = kftclient
 
-SERVER_OBJ = server.o dropper.o arq.o utilities.o
+SERVER_OBJ = server.o dropper.o arq.o utilities.o message.o
 SERVER_TARGET = kftserver
 
 all: CFLAGS += $(RELEASE_FLAGS)
