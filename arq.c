@@ -3,6 +3,9 @@
 #define ACK_TIMEOUT 2           // Number of seconds to wait for an ACK
 #define MAX_RESEND_ATTEMPTS 5   // Number of times to resend before failing.
 
+#define MIN_PACKET_SIZE 10
+#define PACKET_META_SIZE 2
+
 static int sequence_number;
 static int max_packet_size;
 
@@ -15,6 +18,8 @@ int arq_init(int loss_percentage, int max_packet_size_temp) {
 
     if (max_packet_size_temp <= 0) {
         max_packet_size = -1;
+    } else if (max_packet_size_temp < MIN_PACKET_SIZE) {
+        max_packet_size = MIN_PACKET_SIZE;
     } else {
         max_packet_size = max_packet_size_temp;
     }
@@ -144,8 +149,10 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
     }
 
     // Respond with an ACK for the sequence number
-    if ((arq_ack(sock, message->sequence_number, src_addr, *addr_len)) <= 0) {
+    if ((arq_ack(sock, message->sequence_number, src_addr, *addr_len)) < 0) {
         fprintf(stderr, "Could not send ACK.\n");
+
+        printf("%d\n", errno == EINVAL);
     }
 
     memset(buffer, 0, len);
@@ -191,4 +198,8 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
     }
 
     return size;
+}
+
+int arq_get_max_data_size() {
+    return max_packet_size - PACKET_META_SIZE;
 }

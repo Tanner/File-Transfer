@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
 
         char *client = inet_ntoa(client_address.sin_addr);
 
-
         int split_size = 0;
         char **split_buffer = split(buffer, " ", &split_size);
 
@@ -83,10 +82,12 @@ int main(int argc, char *argv[])
                     // Got a request with a file name
                     char *file = split_buffer[1];
 
-                    FILE *fp = fopen(file, "r");
-                    void *chunk = calloc(6, sizeof(char));
-
                     printf("%s - Received request for %s\n", client, file);
+
+                    int chunk_size = arq_get_max_data_size();
+
+                    FILE *fp = fopen(file, "r");
+                    void *chunk = calloc((size_t) chunk_size, sizeof(char));
 
                     if (!fp) {
                         // Oh no the file error
@@ -99,7 +100,7 @@ int main(int argc, char *argv[])
                         // File was opened successfully
                         printf("%s - Starting transfer\n", client);
 
-                        while (fread(chunk, 5, 1, fp) > 0) {
+                        while (fread(chunk, 1, chunk_size, fp) > 0) {
                             memset(buffer, 0, sizeof(char) * BUFFER_MAX_SIZE);
                             sprintf(buffer, "SEND %s", (char *) chunk);
 
