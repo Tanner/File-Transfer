@@ -103,17 +103,6 @@ int main(int argc, char *argv[])
                             sprintf(buffer, "SEND %s", (char *) chunk);
 
                             arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size);
-                            
-                            memset(buffer, 0, BUFFER_MAX_SIZE);
-                            if ((message_size = arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
-                                fprintf(stderr, "Could not receive message from client.");
-                                exit(2);
-                            }
-
-                            if (strcmp(buffer, "BYE") == 0) {
-                                printf("%s - Client terminated transfer\n", client);
-                                break;
-                            }
                         }
 
                         if (feof(fp) != 0) {
