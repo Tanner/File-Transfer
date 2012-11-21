@@ -66,11 +66,12 @@ int main(int argc, char *argv[])
 	while(1) {
 		client_address_size = sizeof(client_address);
 
+        if (arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size) < 0) {
+            continue;
+        }
+
         char *client = inet_ntoa(client_address.sin_addr);
 
-        if (arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size) < 0) {
-            fprintf(stderr, "%s - Unable to receive from client.", client);
-        }
 
         int split_size = 0;
         char **split_buffer = split(buffer, " ", &split_size);
