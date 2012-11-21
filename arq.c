@@ -1,6 +1,7 @@
 #include "arq.h"
 
-#define ACK_TIMEOUT 2       // Number of seconds to wait for an ACK
+#define ACK_TIMEOUT 2           // Number of seconds to wait for an ACK
+#define MAX_RESEND_ATTEMPTS 5   // Number of times to resend before failing.
 
 static int sequence_number;
 static int max_packet_size;
@@ -51,6 +52,8 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     int package_size = message_encode(package, BUFFER_MAX_SIZE, sequence_number, buffer);
 
     // Send the message and see if we get an ACK
+    int resend_attempt = 0;
+
     do {
         if (debug) {
             printf("Sending: %d %s\n", sequence_number, (char *) buffer);
@@ -96,7 +99,19 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
 
             gettimeofday(&tv, 0);
         } while (tv.tv_sec - sent_time < ACK_TIMEOUT && !message_received);
-    } while (!message_received);
+
+        if (!message_received) {
+            resend_attempt++;
+        }
+    } while (!message_received && resend_attempt < MAX_RESEND_ATTEMPTS);
+
+    if (resend_attempt >= MAX_RESEND_ATTEMPTS) {
+        if (debug) {
+            printf("Max number of resends exceeded. Giving up.\n");
+        }
+
+        return 0;
+    }
 
     sequence_number = (sequence_number + 1) % 2;
 
