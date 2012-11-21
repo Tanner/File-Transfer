@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	while(1) {
 		client_address_size = sizeof(client_address);
 
-        if ((message_size = arq_recvfrom(sock, &buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
+        if ((message_size = arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
             fprintf(stderr, "Could not receive message from client.");
             exit(2);
         }

@@ -35,7 +35,7 @@ ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
     return arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
 }
 
-ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len, int messages_remaining) {
+ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len) {
     struct timeval tv;
     time_t sent_time;
     int size = 0;
@@ -76,7 +76,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
                 int split_size = 0;
                 char **split_buffer = split(message->message, " ", &split_size);
 
-                if (split_size == 3 && strcmp(split_buffer[0], "ACK") == 0) {
+                if (split_size == 2 && strcmp(split_buffer[0], "ACK") == 0) {
                     // Received an ACK
                     int ack_sequence_number = atoi(split_buffer[1]);
 
@@ -103,30 +103,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     return size;
 }
 
-ssize_t arq_recvfrom(int sock, char **buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len) {
-    EXPECT *expect = arq_recvfrom_expect(sock, buffer, len, flags, src_addr, addr_len, 0);
-    int size = expect->size;
-
-    free(expect);
-
-    // See if we've received a MPS message
-    int split_size = 0;
-    char **split_buffer = split(*buffer, " ", &split_size);
-    
-    if (strcmp(split_buffer[0], "MPS") == 0) {
-        max_packet_size = atoi(split_buffer[1]);
-
-        if (debug) {
-            printf("Updated max packet size to %d byte(s)\n", max_packet_size);
-        }
-
-        return arq_recvfrom(sock, buffer, len, flags, src_addr, addr_len);
-    }
-
-    return size;
-}
-
-EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len, int expect_handled) {
+int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len) {
     // Set up src_addr or addr_len if they are null (which is allowed by recvfrom usually)
     int src_addr_malloc = 0;
     int addr_len_malloc = 0;
@@ -143,7 +120,7 @@ EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, str
         *addr_len = sizeof(src_addr);
     }
 
-    int size = recvfrom(sock, *buffer, len, flags, src_addr, (socklen_t *) addr_len);
+    int size = recvfrom(sock, buffer, len, flags, src_addr, (socklen_t *) addr_len);
 
     MESSAGE *message = message_decode(buffer);
 
@@ -168,7 +145,21 @@ EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, str
         free(addr_len);
     }
     
-    return expect;
+    // See if we've received a MPS message
+    int split_size = 0;
+    char **split_buffer = split(buffer, " ", &split_size);
+    
+    if (strcmp(split_buffer[0], "MPS") == 0) {
+        max_packet_size = atoi(split_buffer[1]);
+
+        if (debug) {
+            printf("Updated max packet size to %d byte(s)\n", max_packet_size);
+        }
+
+        return arq_recvfrom(sock, buffer, len, flags, src_addr, addr_len);
+    }
+    
+    return size;
 }
 
 ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, int addr_len) {
