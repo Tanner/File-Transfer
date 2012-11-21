@@ -35,11 +35,7 @@ ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
     return arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
 }
 
-ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len) {
-    return arq_sendto_assist(sock, buffer, len, flags, dest_addr, addr_len, -1);
-}
-
-ssize_t arq_sendto_assist(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len, int messages_remaining) {
+ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len, int messages_remaining) {
     struct timeval tv;
     time_t sent_time;
     int size = 0;
@@ -50,46 +46,17 @@ ssize_t arq_sendto_assist(int sock, void *buffer, size_t len, int flags, struct 
     
     memset(recv_buffer, 0, BUFFER_MAX_SIZE);
 
-    // Format message to send with sequence number and messages remaining
-    void *seq_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
-
-    sprintf(seq_buffer, "%d %d ", sequence_number, messages_remaining);
-
-    if (messages_remaining == -1) {
-        // Message has not been determined whether or not it needs to be broken up
-        if (strlen(seq_buffer) + strlen(buffer) > max_packet_size) {
-            // Split up the message
-            int usable_size = max_packet_size - strlen(seq_buffer);
-
-            int split_size = 0;
-            char **split_buffer = arq_split_up_message(buffer, usable_size, &split_size);
-
-            for (int i = 0; i < split_size; i++) {
-                size += arq_sendto_assist(sock, split_buffer[i], strlen(split_buffer[i]), flags, dest_addr, addr_len, split_size - i - 1);
-            }
-
-            free(split_buffer);
-            free(seq_buffer);
-
-            return size;
-        } else {
-            // Don't need to split up the message
-            messages_remaining = 0;
-
-            memset(seq_buffer, 0, BUFFER_MAX_SIZE);
-            sprintf(seq_buffer, "%d %d ", sequence_number, messages_remaining);
-        }
-    }
-
-    strncat(seq_buffer, buffer, BUFFER_MAX_SIZE - strlen(seq_buffer));
+    // Format message to send with sequence number
+    char *package = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+    int package_size = message_encode(package, BUFFER_MAX_SIZE, sequence_number, buffer);
 
     // Send the message and see if we get an ACK
     do {
         if (debug) {
-            printf("Sending: %s\n", (char *) seq_buffer);
+            printf("Sending: %d %s\n", sequence_number, (char *) buffer);
         }
         
-        size = sendto_dropper(sock, seq_buffer, strlen(seq_buffer), flags, dest_addr, addr_len);
+        size = sendto_dropper(sock, package, package_size, flags, dest_addr, addr_len);
 
         gettimeofday(&tv, 0);
         sent_time = tv.tv_sec;
@@ -173,61 +140,26 @@ EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, str
 
     int size = recvfrom(sock, *buffer, len, flags, src_addr, (socklen_t *) addr_len);
 
+    MESSAGE *message = message_decode(buffer);
+
     if (debug) {
-        printf("Received: %s\n", (char *) *buffer);
+        printf("Received: %s\n", (char *) message->message);
     }
 
     // Respond with an ACK for the sequence number
     int split_size = 0;
-    char **split_buffer = split(*buffer, " ", &split_size);
+    char **split_buffer = split(message->message, " ", &split_size);
 
     if (split_size < 3) {
         fprintf(stderr, "Did not receive a properly formatted message.\n");
     }
 
-    int recv_sequence_number = atoi(split_buffer[0]);
-    int recv_messages_remaining = atoi(split_buffer[1]);
-
-    if ((arq_ack(sock, recv_sequence_number, src_addr, *addr_len)) < 0) {
+    if ((arq_ack(sock, atoi(split_buffer[0]), src_addr, *addr_len)) <= 0) {
         fprintf(stderr, "Could not send ACK.\n");
     }
 
-    // Strip out sequence number and messages remaining from buffer that the user will read
-    free(*buffer);
-
-    *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
-    memset(*buffer, 0, BUFFER_MAX_SIZE);
-
-    for (int i = 2; i < split_size; i++) {
-        if (i == 2) {
-            sprintf(*buffer, "%s", split_buffer[i]);
-        } else {
-            sprintf(*buffer, "%s %s", *buffer, split_buffer[i]);
-        }
-    }
-
-    // Create EXPECT struct
-    EXPECT *expect = malloc(sizeof(EXPECT));
-    expect->size = size;
-    expect->messages_remaining = recv_messages_remaining;
-    
-    // Check to see if we need to handle more messages
-    if (!expect_handled) {
-        while (expect->messages_remaining > 0) {
-            char *temp_buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
-            assert(temp_buffer);
-
-            EXPECT *temp_expect = arq_recvfrom_expect(sock, &temp_buffer, BUFFER_MAX_SIZE, flags, src_addr, addr_len, 1);
-
-            *buffer = realloc(*buffer, BUFFER_MAX_SIZE + BUFFER_MAX_SIZE);
-            *buffer = memcpy(*buffer, temp_buffer, temp_expect->size);
-
-            expect->size = temp_expect->size;
-            expect->messages_remaining = temp_expect->messages_remaining;
-
-            free(temp_expect);
-        }
-    }
+    memset(buffer, 0, len);
+    strcpy(buffer, message->message);
 
     // Free anything alloc'd
     if (src_addr_malloc) {
@@ -241,12 +173,14 @@ EXPECT * arq_recvfrom_expect(int sock, char **buffer, size_t len, int flags, str
     return expect;
 }
 
-ssize_t arq_ack(int sock, int sequence_number, struct sockaddr *dest_addr, int addr_len) {
-    char buffer[BUFFER_MAX_SIZE];
+ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, int addr_len) {
+    char *message = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+    sprintf(message, "ACK %d", sequence_number_ack);
 
-    sprintf(buffer, "ACK %d 0", sequence_number);
+    char *package = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+    int package_size = message_encode(package, BUFFER_MAX_SIZE, sequence_number, message);
 
-    int size = sendto_dropper(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
+    int size = sendto_dropper(sock, package, package_size, 0, dest_addr, addr_len);
 
     if (debug) {
         printf("Sent %s\n", buffer);

@@ -9,6 +9,7 @@
 
 #include "utilities.h"
 #include "dropper.h"
+#include "message.h"
 
 #ifndef __ARQ_H__
 #define __ARQ_H__
