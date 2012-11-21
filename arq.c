@@ -81,7 +81,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
                     int ack_sequence_number = atoi(split_buffer[1]);
 
                     if (debug) {
-                        printf("Received: ACK %d\n", ack_sequence_number);
+                        printf("Received: %d ACK %d\n", sequence_number, ack_sequence_number);
                     }
 
                     if (ack_sequence_number == sequence_number) {
@@ -188,7 +188,7 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
     int size = sendto_dropper(sock, package, package_size, 0, dest_addr, addr_len);
 
     if (debug) {
-        printf("Sent %s\n", buffer);
+        printf("Sent %d ACK %d\n", sequence_number, sequence_number_ack);
     }
 
     return size;
