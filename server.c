@@ -12,7 +12,7 @@
 
 #define MAX_PENDING 5
 
-void send_error(int sock, struct sockaddr *dest_addr, int addr_len);
+int send_error(int sock, struct sockaddr *dest_addr, int addr_len);
 
 int main(int argc, char *argv[])
 {
@@ -61,21 +61,19 @@ int main(int argc, char *argv[])
 
 	printf("Server started...\n");
 
-    int message_size;
     char *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
 
 	while(1) {
 		client_address_size = sizeof(client_address);
 
-        if ((message_size = arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size)) < 0) {
-            fprintf(stderr, "Could not receive message from client.");
-            exit(2);
+        char *client = inet_ntoa(client_address.sin_addr);
+
+        if (arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size) < 0) {
+            fprintf(stderr, "%s - Unable to receive from client.", client);
         }
 
         int split_size = 0;
         char **split_buffer = split(buffer, " ", &split_size);
-
-        char *client = inet_ntoa(client_address.sin_addr);
 
         if (split_size > 0) {
             // Handle REQUEST
@@ -93,7 +91,9 @@ int main(int argc, char *argv[])
                         // Oh no the file error
                         printf("%s - Could not open file %s\n", client, file);
 
-                        send_error(sock, (struct sockaddr *) &client_address, client_address_size);
+                        if (send_error(sock, (struct sockaddr *) &client_address, client_address_size) < 0) {
+                            fprintf(stderr, "%s - Unable to contact client.\n", client);
+                        }
                     } else {
                         // File was opened successfully
                         printf("%s - Starting transfer\n", client);
@@ -102,7 +102,11 @@ int main(int argc, char *argv[])
                             memset(buffer, 0, sizeof(char) * BUFFER_MAX_SIZE);
                             sprintf(buffer, "SEND %s", (char *) chunk);
 
-                            arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size);
+                            if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size) < 0) {
+                                fprintf(stderr, "%s - Unable to contact client.\n", client);
+
+                                break;
+                            }
                         }
 
                         if (feof(fp) != 0) {
@@ -113,7 +117,9 @@ int main(int argc, char *argv[])
                             memset(buffer, 0, BUFFER_MAX_SIZE);
                             strcpy(buffer, "EOF");
 
-                            arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size);
+                            if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size) < 0) {
+                                fprintf(stderr, "%s - Unable to contact client.\n", client);
+                            }
 
                             printf("%s - Connection terminated\n", client);
                         } else if (ferror(fp) != 0) {
@@ -121,7 +127,9 @@ int main(int argc, char *argv[])
                             printf("%s - Error occurred while reading file %s\n", client, file);
                             printf("%s - Terminating connection\n", client); 
 
-                            send_error(sock, (struct sockaddr *) &client_address, client_address_size);
+                            if (send_error(sock, (struct sockaddr *) &client_address, client_address_size) < 0) {
+                                fprintf(stderr, "%s - Unable to contact client.\n", client);
+                            }
 
                             printf("%s - Connection terminated\n", client);
                         }
@@ -142,11 +150,8 @@ int main(int argc, char *argv[])
     free(buffer);
 }
 
-void send_error(int sock, struct sockaddr *dest_addr, int addr_len) {
+int send_error(int sock, struct sockaddr *dest_addr, int addr_len) {
     char *buffer = "ERROR";
 
-    if (arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len) == -1) {
-        fprintf(stderr, "Could not send error to client.\n");
-        exit(2);
-    }
+    return arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
 }

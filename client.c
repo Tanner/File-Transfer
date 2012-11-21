@@ -70,7 +70,12 @@ int main(int argc, char *argv[]) {
     time_t start_time, end_time;
 
     // Inform server of max packet size
-    arq_inform_send(sock, (struct sockaddr *) &server_address, sizeof(server_address));
+    if (arq_inform_send(sock, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
+        fprintf(stderr, "Unable to contact server.\n");
+        
+        close(sock);
+        exit(2);
+    }
 
     gettimeofday(&tv, 0);
     start_time = tv.tv_sec;
@@ -81,7 +86,12 @@ int main(int argc, char *argv[]) {
 
     // Request the file from the server
     sprintf(buffer, "REQUEST %s", remote_filename);
-    arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address));
+    if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
+        fprintf(stderr, "Unable to contact server.\n");
+        
+        close(sock);
+        exit(2);
+    }
 
     printf("Starting transfer...\n");
 
