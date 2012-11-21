@@ -71,20 +71,25 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
                 }
             } else {
                 // We got a message!
+                MESSAGE *message = message_decode(recv_buffer);
+
                 int split_size = 0;
-                char **split_buffer = split(recv_buffer, " ", &split_size);
+                char **split_buffer = split(message->message, " ", &split_size);
 
                 if (split_size == 3 && strcmp(split_buffer[0], "ACK") == 0) {
                     // Received an ACK
                     int ack_sequence_number = atoi(split_buffer[1]);
 
+                    if (debug) {
+                        printf("Received: ACK %d\n", ack_sequence_number);
+                    }
+
                     if (ack_sequence_number == sequence_number) {
                         message_received = 1;
                     }
                 } else {
-                    // Did not receive an ACK
                     if (debug) {
-                        printf("Received a message, but it wasn't an ACK\n");
+                        printf("Received non-ACK message\n");
                     }
                 }
             }
