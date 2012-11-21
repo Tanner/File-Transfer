@@ -3,7 +3,6 @@
 #define ACK_TIMEOUT 2           // Number of seconds to wait for an ACK
 #define MAX_RESEND_ATTEMPTS 5   // Number of times to resend before failing.
 
-#define MIN_PACKET_SIZE 10
 #define PACKET_META_SIZE 2
 
 static int sequence_number;

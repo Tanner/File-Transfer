@@ -14,6 +14,8 @@
 #ifndef __ARQ_H__
 #define __ARQ_H__
 
+#define MIN_PACKET_SIZE 10
+
 int debug;
 
 typedef struct _EXPECT {
