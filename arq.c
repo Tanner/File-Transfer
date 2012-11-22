@@ -152,10 +152,8 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
     }
 
     // Respond with an ACK for the sequence number
-    if ((arq_ack(sock, message->sequence_number, src_addr, *addr_len)) < 0) {
+    if ((arq_ack(sock, message->sequence_number, src_addr, *addr_len)) <= 0) {
         fprintf(stderr, "Could not send ACK.\n");
-
-        printf("%d\n", errno == EINVAL);
     }
 
     memset(buffer, 0, len);
@@ -197,7 +195,11 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
     int size = sendto_dropper(sock, package, package_size, 0, dest_addr, addr_len);
 
     if (debug) {
-        printf("Sending: %d ACK %d\n", sequence_number, sequence_number_ack);
+        printf("Sending: %d %s\n", sequence_number, message);
+
+        if (size <= 0) {
+            printf("Error: %s\n", strerror(errno));
+        }
     }
 
     free(message);
