@@ -114,10 +114,14 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
             printf("Max number of resends exceeded. Giving up.\n");
         }
 
+        free(package);
+
         return -1;
     }
 
     sequence_number = (sequence_number + 1) % 2;
+
+    free(package);
 
     return size;
 }
@@ -195,6 +199,9 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
     if (debug) {
         printf("Sending: %d ACK %d\n", sequence_number, sequence_number_ack);
     }
+
+    free(message);
+    free(package);
 
     return size;
 }

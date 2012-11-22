@@ -73,6 +73,8 @@ int main(int argc, char *argv[]) {
     // Inform server of max packet size
     if (arq_inform_send(sock, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
         fprintf(stderr, "Unable to contact server.\n");
+
+        free(buffer);
         
         close(sock);
         exit(2);
@@ -90,7 +92,9 @@ int main(int argc, char *argv[]) {
     sprintf(buffer, "REQUEST %s", remote_filename);
     if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
         fprintf(stderr, "Unable to contact server.\n");
-        
+
+        free(buffer); 
+
         close(sock);
         exit(2);
     }
@@ -108,6 +112,8 @@ int main(int argc, char *argv[]) {
         // Error checking
         if (strcmp(buffer, "ERROR") == 0) {
             printf("Server returned an error. Exiting.\n");
+
+            free(buffer);
 
             close(sock);
             exit(2);
@@ -144,6 +150,8 @@ int main(int argc, char *argv[]) {
     end_time_ms = tv.tv_usec / 1000;
 
     printf("Transfer took %d second(s) and %d millisecond(s)\n", (int) (end_time_s - start_time_s), (int) (end_time_ms - start_time_ms));
+
+    free(buffer);
 
     close(sock);
 
