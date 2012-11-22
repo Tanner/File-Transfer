@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
         
         if (strcmp(temp, "SEND") == 0) {
             // SEND detected; extract data
-            char *data = malloc(sizeof(char) * (strlen(buffer) - 4));
+            char *data = calloc(strlen(buffer) - 4, sizeof(char));
             strncpy(data, buffer + 5, strlen(buffer) - 4);
 
             if (fwrite(data, strlen(data), 1, fp) != 1) {

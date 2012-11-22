@@ -34,6 +34,7 @@ int arq_init(int loss_percentage, int max_packet_size_temp) {
 
 ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
     char buffer[BUFFER_MAX_SIZE];
+    memset(buffer, 0, BUFFER_MAX_SIZE);
 
     sprintf(buffer, "MPS %d", max_packet_size);
 
@@ -140,7 +141,7 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
         addr_len = malloc(sizeof(int));
         addr_len_malloc = 1;
 
-        *addr_len = sizeof(src_addr);
+        *addr_len = sizeof(*src_addr);
     }
 
     int size = recvfrom(sock, buffer, len, flags, src_addr, (socklen_t *) addr_len);
@@ -162,17 +163,21 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
     // Free anything alloc'd
     if (src_addr_malloc) {
         free(src_addr);
+
+        src_addr = 0;
     }
 
     if (addr_len_malloc) {
         free(addr_len);
+
+        *addr_len = 0;
     }
     
     // See if we've received a MPS message
     int split_size = 0;
     char **split_buffer = split(buffer, " ", &split_size);
     
-    if (strcmp(split_buffer[0], "MPS") == 0) {
+    if (split_size == 2 && strcmp(split_buffer[0], "MPS") == 0) {
         max_packet_size = atoi(split_buffer[1]);
 
         if (debug) {
@@ -186,10 +191,10 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
 }
 
 ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, int addr_len) {
-    char *message = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+    char *message = calloc(BUFFER_MAX_SIZE, sizeof(char));
     sprintf(message, "ACK %d", sequence_number_ack);
 
-    char *package = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+    char *package = calloc(BUFFER_MAX_SIZE, sizeof(char));
     int package_size = message_encode(package, BUFFER_MAX_SIZE, sequence_number, message);
 
     int size = sendto_dropper(sock, package, package_size, 0, dest_addr, addr_len);
