@@ -129,11 +129,13 @@ int main(int argc, char *argv[]) {
 
             if (fwrite(data, strlen(data), 1, fp) != 1) {
                 printf("Error writing to file.\n");
+                /*
                 printf("Terminating connection\n");
                 printf("Connection terminated\n");
 
                 close(sock);
                 exit(2);
+                */
             }
         } else if (strcmp(buffer, "EOF") != 0) {
             if (debug) {
