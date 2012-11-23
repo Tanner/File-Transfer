@@ -178,7 +178,7 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
     if (addr_len_malloc) {
         free(addr_len);
 
-        *addr_len = 0;
+        addr_len = 0;
     }
 
     free(message->message);
