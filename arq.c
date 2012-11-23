@@ -100,6 +100,14 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
                         printf("Received non-ACK message\n");
                     }
                 }
+
+                for (int i = 0; i < split_size; i++) {
+                    free(split_buffer[i]);
+                }
+                free(split_buffer);
+
+                free(message->message);
+                free(message);
             }
 
             gettimeofday(&tv, 0);
@@ -172,6 +180,9 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
 
         *addr_len = 0;
     }
+
+    free(message->message);
+    free(message);
     
     // See if we've received a MPS message
     int split_size = 0;
@@ -186,6 +197,11 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
 
         return arq_recvfrom(sock, buffer, len, flags, src_addr, addr_len);
     }
+
+    for (int i = 0; i < split_size; i++) {
+        free(split_buffer[i]);
+    }
+    free(split_buffer);
     
     return size;
 }

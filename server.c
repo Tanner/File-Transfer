@@ -147,6 +147,11 @@ int main(int argc, char *argv[])
         } else {
             printf("%s - Unsure what to do.\n", client);
         }
+
+        for (int i = 0; i < split_size; i++) {
+            free(split_buffer[i]);
+        }
+        free(split_buffer);
     }
 
     free(buffer);
