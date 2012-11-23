@@ -195,6 +195,11 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
             printf("Updated max packet size to %d byte(s)\n", max_packet_size);
         }
 
+        for (int i = 0; i < split_size; i++) {
+            free(split_buffer[i]);
+        }
+        free(split_buffer);
+
         return arq_recvfrom(sock, buffer, len, flags, src_addr, addr_len);
     }
 
