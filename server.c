@@ -138,6 +138,8 @@ int main(int argc, char *argv[])
                             printf("%s - Connection terminated\n", client);
                         }
                     }
+
+                    free(chunk);
                 } else {
                     printf("%s - Incorrect arguments for REQUEST.\n", client);
 
