@@ -137,12 +137,16 @@ int main(int argc, char *argv[]) {
                 exit(2);
                 */
             }
+
+            free(data);
         } else if (strcmp(buffer, "EOF") != 0) {
             if (debug) {
                 printf("Unkown response type.\n");
                 printf("Received: %s\n", buffer);
             }
         }
+
+        free(temp);
     } while (strcmp(buffer, "EOF") != 0);
 
     printf("Transfer complete.\n");
