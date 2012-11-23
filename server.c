@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
 	while(1) {
 		client_address_size = sizeof(client_address);
 
+        memset(buffer, 0, BUFFER_MAX_SIZE);
+
         if (arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size) < 0) {
             continue;
         }
