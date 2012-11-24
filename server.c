@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
                     int chunk_size = arq_get_max_data_size();
 
                     FILE *fp = fopen(file, "r");
-                    void *chunk = calloc((size_t) chunk_size, sizeof(char));
+                    void *chunk = calloc((size_t) chunk_size + 1, sizeof(char));
 
                     if (!fp) {
                         // Oh no the file error
@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
                         // File was opened successfully
                         printf("%s - Starting transfer\n", client);
 
+                        memset(chunk, 0, chunk_size + 1);
                         while (fread(chunk, 1, chunk_size, fp) > 0) {
                             memset(buffer, 0, sizeof(char) * BUFFER_MAX_SIZE);
                             sprintf(buffer, "SEND %s", (char *) chunk);

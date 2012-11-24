@@ -14,10 +14,10 @@ MESSAGE * message_decode(char *buffer) {
 
     message->sequence_number = buffer[0];
 
-    message->message = malloc(sizeof(char) * strlen(buffer + 1));
+    message->message = calloc(strlen(buffer + 1) + 1, sizeof(char));
     assert(message->message);
 
-    strcpy(message->message, buffer + 1);
+    memmove(message->message, buffer + 1, strlen(buffer + 1));
 
     return message;
 }
