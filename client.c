@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 	server_address.sin_addr.s_addr = inet_addr(server_ip);
 	server_address.sin_port = htons(server_port);
 
-    char *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+    char *buffer = malloc(sizeof(char) * arq_get_max_packet_size());
     struct timeval tv;
     time_t start_time_s, end_time_s;
     time_t start_time_ms, end_time_ms;
@@ -105,9 +105,9 @@ int main(int argc, char *argv[]) {
 
     // Receive the file from the server
     do {
-        memset(buffer, 0, BUFFER_MAX_SIZE);
+        memset(buffer, 0, arq_get_max_packet_size());
 
-        arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, 0, 0);
+        arq_recvfrom(sock, buffer, arq_get_max_packet_size(), 0, 0, 0);
 
         // Error checking
         if (strcmp(buffer, "ERROR") == 0) {

@@ -6,8 +6,6 @@
 #ifndef __UTILITIES_H__
 #define __UTILITIES_H__
 
-#define BUFFER_MAX_SIZE 255
-
 char ** split(char *input, char *delimiter, int *size);
 
 #endif

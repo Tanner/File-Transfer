@@ -33,8 +33,8 @@ int arq_init(int loss_percentage, int max_packet_size_temp) {
 }
 
 ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
-    char buffer[BUFFER_MAX_SIZE];
-    memset(buffer, 0, BUFFER_MAX_SIZE);
+    char buffer[arq_get_max_packet_size()];
+    memset(buffer, 0, arq_get_max_packet_size());
 
     sprintf(buffer, "MPS %d", max_packet_size);
 
@@ -45,16 +45,16 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     struct timeval tv;
     time_t sent_time;
     int size = 0;
-    char recv_buffer[BUFFER_MAX_SIZE];
+    char recv_buffer[arq_get_max_packet_size()];
     int recv_buffer_size;
 
     int message_received = 0;
     
-    memset(recv_buffer, 0, BUFFER_MAX_SIZE);
+    memset(recv_buffer, 0, arq_get_max_packet_size());
 
     // Format message to send with sequence number
-    char *package = malloc(sizeof(char) * BUFFER_MAX_SIZE);
-    int package_size = message_encode(package, BUFFER_MAX_SIZE, sequence_number, buffer);
+    char *package = malloc(sizeof(char) * arq_get_max_packet_size());
+    int package_size = message_encode(package, arq_get_max_packet_size(), sequence_number, buffer);
 
     // Send the message and see if we get an ACK
     int resend_attempt = 0;
@@ -70,7 +70,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
         sent_time = tv.tv_sec;
 
         do {
-            if ((recv_buffer_size = recvfrom(sock, recv_buffer, BUFFER_MAX_SIZE, MSG_DONTWAIT, 0, 0)) < 0) {
+            if ((recv_buffer_size = recvfrom(sock, recv_buffer, arq_get_max_packet_size(), MSG_DONTWAIT, 0, 0)) < 0) {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) {
                     // Nothing bad happened, just nothing happened
                 } else {
@@ -212,11 +212,11 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
 }
 
 ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, int addr_len) {
-    char *message = calloc(BUFFER_MAX_SIZE, sizeof(char));
+    char *message = calloc(arq_get_max_packet_size(), sizeof(char));
     sprintf(message, "ACK %d", sequence_number_ack);
 
-    char *package = calloc(BUFFER_MAX_SIZE, sizeof(char));
-    int package_size = message_encode(package, BUFFER_MAX_SIZE, sequence_number, message);
+    char *package = calloc(arq_get_max_packet_size(), sizeof(char));
+    int package_size = message_encode(package, arq_get_max_packet_size(), sequence_number, message);
 
     int size = sendto_dropper(sock, package, package_size, 0, dest_addr, addr_len);
 
@@ -236,4 +236,12 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
 
 int arq_get_max_data_size() {
     return max_packet_size - PACKET_META_SIZE;
+}
+
+int arq_get_max_packet_size() {
+    if (max_packet_size <= 0) {
+        return 255;
+    }
+
+    return max_packet_size;
 }

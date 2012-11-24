@@ -34,5 +34,6 @@ ssize_t arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct socka
 ssize_t arq_ack(int sock, int sequence_number, struct sockaddr *dest_addr, int addr_len);
 
 int arq_get_max_data_size();
+int arq_get_max_packet_size();
 
 #endif

@@ -61,14 +61,14 @@ int main(int argc, char *argv[])
 
 	printf("Server started...\n");
 
-    char *buffer = malloc(sizeof(char) * BUFFER_MAX_SIZE);
+    char *buffer = malloc(sizeof(char) * arq_get_max_packet_size());
 
 	while(1) {
 		client_address_size = sizeof(client_address);
 
-        memset(buffer, 0, BUFFER_MAX_SIZE);
+        memset(buffer, 0, arq_get_max_packet_size());
 
-        if (arq_recvfrom(sock, buffer, BUFFER_MAX_SIZE, 0, (struct sockaddr *) &client_address, &client_address_size) < 0) {
+        if (arq_recvfrom(sock, buffer, arq_get_max_packet_size(), 0, (struct sockaddr *) &client_address, &client_address_size) < 0) {
             continue;
         }
 
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 
                         memset(chunk, 0, chunk_size + 1);
                         while (fread(chunk, 1, chunk_size, fp) > 0) {
-                            memset(buffer, 0, sizeof(char) * BUFFER_MAX_SIZE);
+                            memset(buffer, 0, sizeof(char) * arq_get_max_packet_size());
                             sprintf(buffer, "SEND %s", (char *) chunk);
 
                             if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size) < 0) {
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
                             printf("%s - Transfer complete\n", client); 
                             printf("%s - Terminating connection\n", client); 
 
-                            memset(buffer, 0, BUFFER_MAX_SIZE);
+                            memset(buffer, 0, arq_get_max_packet_size());
                             strcpy(buffer, "EOF");
 
                             if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size) < 0) {
