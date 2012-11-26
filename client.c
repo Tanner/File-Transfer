@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     do {
         buffer = calloc(1, sizeof(char) * arq_get_max_packet_size());
 
-        arq_recvfrom(sock, buffer, arq_get_max_packet_size(), 0, 0, 0);
+        int size = arq_recvfrom(sock, buffer, arq_get_max_packet_size(), 0, 0, 0);
 
         // Error checking
         if (strcmp(buffer, "ERROR") == 0) {
@@ -126,10 +126,13 @@ int main(int argc, char *argv[]) {
         
         if (strcmp(temp, "SEND") == 0) {
             // SEND detected; extract data
-            char *data = calloc(strlen(buffer) - 4, sizeof(char));
-            strncpy(data, buffer + 5, strlen(buffer) - 4);
+            char *data = calloc(size, sizeof(char));
 
-            if (fwrite(data, strlen(data), 1, fp) != 1) {
+            int data_length = size - 5;
+
+            strncpy(data, buffer + 4, data_length);
+
+            if (fwrite(data, 1, data_length, fp) != data_length) {
                 printf("Error writing to file.\n");
                 /*
                 printf("Terminating connection\n");
