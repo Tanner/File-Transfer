@@ -1,6 +1,17 @@
 #include "message.h"
 #include "assert.h"
 
+/**
+ * Encodes a message into a string (packet).
+ *
+ * @param buffer            Resulting string
+ * @param size              Size of buffer
+ * @param sequence_number   Sequence number
+ * @param message           Message to be encoded
+ * @param length            Length of message
+ *
+ * @return Length of resulting string
+ */
 int message_encode(char *buffer, int size, int sequence_number, char *message, int length) {
     assert(size - 3 >= length);
 
@@ -16,6 +27,14 @@ int message_encode(char *buffer, int size, int sequence_number, char *message, i
     return length + 1 + 32;
 }
 
+/**
+ * Decodes a message into its separate parts.
+ *
+ * @param buffer    Buffer to decode
+ * @param size      Size of buffer
+ *
+ * @return Message
+ */
 MESSAGE * message_decode(char *buffer, int size) {
     MESSAGE *message = calloc(1, sizeof(MESSAGE));
     assert(message);

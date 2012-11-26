@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
 	unsigned int server_port, max_packet_size;
     unsigned short loss_percentage;
 
+    // Get arguments from user
     if (argc < 7 || argc > 8) {
 	   fprintf(stderr, "Usage: %s <Server IP> <Server Port> <Remote File> <Local File> <Max Packet Size> <Loss Percentage> [-d]\n", argv[0]);
 	   exit(1);
@@ -84,11 +85,11 @@ int main(int argc, char *argv[]) {
     start_time_s = tv.tv_sec;
     start_time_ms = tv.tv_usec / 1000;
 
+    // Request the file from the server
     if (debug) {
         printf("Requesting file from server.\n");
     }
 
-    // Request the file from the server
     sprintf(buffer, "REQUEST %s", remote_filename);
 
     printf("%d %d\n", strlen(buffer), arq_get_max_data_size());
@@ -113,12 +114,13 @@ int main(int argc, char *argv[]) {
     free(buffer);
     buffer = 0;
 
+    // Receive the file from the server
     printf("Starting transfer...\n");
 
     FILE *fp = fopen(local_filename, "w");
 
-    // Receive the file from the server
     do {
+        // Keep receiving data until we receive EOF or worse, time out
         if (buffer) {
             free(buffer);
             buffer = 0;
@@ -155,17 +157,12 @@ int main(int argc, char *argv[]) {
             int data_written = 0;
             if ((data_written = fwrite(data, 1, data_length, fp)) != data_length) {
                 printf("Error writing to file - wrote %d out of %d byte(s).\n", data_written, data_length);
-                /*
-                printf("Terminating connection\n");
-                printf("Connection terminated\n");
-
-                close(sock);
-                exit(2);
-                */
             }
 
             free(data);
         } else if (strcmp(buffer, "EOF") != 0) {
+            // Unknown response detected
+
             if (debug) {
                 printf("Unkown response type.\n");
                 printf("Received: %s\n", buffer);

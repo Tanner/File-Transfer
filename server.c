@@ -176,6 +176,15 @@ int main(int argc, char *argv[])
     }
 }
 
+/**
+ * Sends an error.
+ *
+ * @param sock          Socket to send to
+ * @param dest_addr     Destination Address
+ * @param addr_len      Size of dest_addr
+ *
+ * @return Bytes sent
+ */
 int send_error(int sock, struct sockaddr *dest_addr, int addr_len) {
     char *buffer = "ERROR";
 

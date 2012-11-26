@@ -6,6 +6,13 @@
 static int sequence_number;
 static int max_packet_size;
 
+/**
+ * Set up the ARQ with the Max Packet Size.
+ * @param loss_percentage       Loss percentage from 0 to 100 percent
+ * @param max_packet_size_temp  Max Packet Size
+ *
+ * @return Success value, -1 for failure
+ */
 int arq_init(int loss_percentage, int max_packet_size_temp) {
     sequence_number = 0;
 
@@ -13,6 +20,7 @@ int arq_init(int loss_percentage, int max_packet_size_temp) {
         return -1;
     }
 
+    // Ensure the MPS gets set correctly
     if (max_packet_size_temp <= 0) {
         max_packet_size = -1;
     } else if (max_packet_size_temp < MIN_PACKET_SIZE) {
@@ -30,6 +38,12 @@ int arq_init(int loss_percentage, int max_packet_size_temp) {
     return 1;
 }
 
+/**
+ * Inform the server of the MPS.
+ * @param sock          Socket to use
+ * @param dest_addr     Destination Address
+ * @param addr_len      Size of dest_addr
+ */
 ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
     char buffer[arq_get_max_packet_size()];
     memset(buffer, 0, arq_get_max_packet_size());
@@ -39,6 +53,17 @@ ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
     return arq_sendto(sock, buffer, strlen(buffer), 0, dest_addr, addr_len);
 }
 
+/**
+ * Sends a message to the someone.
+ * @param sock          Socket to use
+ * @param buffer        Buffer to send
+ * @param len           Length of buffer
+ * @param flags         Flags
+ * @param dest_addr     Destination Address
+ * @param addr_len      Size of dest_addr
+ *
+ * @return Sent data size
+ */
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len) {
     struct timeval tv;
     time_t sent_time;
@@ -58,6 +83,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     int resend_attempt = 0;
 
     do {
+        // Non-blocking receive until max number of attempts exceeded
         if (debug) {
             printf("Sending: #%d <%s> (%d bytes)\n", sequence_number, (char *) buffer, len);
         }
@@ -68,6 +94,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
         sent_time = tv.tv_sec;
 
         do {
+            // Non-blocking receive until time out expired to send again
             if ((recv_buffer_size = recvfrom(sock, recv_buffer, arq_get_max_packet_size(), MSG_DONTWAIT, 0, 0)) < 0) {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) {
                     // Nothing bad happened, just nothing happened
@@ -117,6 +144,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     } while (!message_received && resend_attempt < MAX_RESEND_ATTEMPTS);
 
     if (resend_attempt >= MAX_RESEND_ATTEMPTS) {
+        // Max number of resends exceeded
         if (debug) {
             printf("Max number of resends exceeded. Giving up.\n");
         }
@@ -133,6 +161,17 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     return size;
 }
 
+/**
+ * Receives a message from someone.
+ * @param sock          Socket to use
+ * @param buffer        Buffer to send
+ * @param len           Length of buffer
+ * @param flags         Flags
+ * @param src_addr      Source Address
+ * @param addr_len      Size of src_addr
+ *
+ * @return Received data size
+ */
 int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr *src_addr, int *addr_len) {
     // Set up src_addr or addr_len if they are null (which is allowed by recvfrom usually)
     int src_addr_malloc = 0;
@@ -150,6 +189,7 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
         *addr_len = sizeof(*src_addr);
     }
 
+    // Get the message
     int size = recvfrom(sock, buffer, len, flags, src_addr, (socklen_t *) addr_len);
 
     MESSAGE *message = message_decode(buffer, size);
@@ -189,6 +229,7 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
     char **split_buffer = split(buffer, " ", &split_size);
     
     if (split_size == 2 && strcmp(split_buffer[0], "MPS") == 0) {
+        // Update the MPS
         max_packet_size = atoi(split_buffer[1]);
 
         if (debug) {
@@ -200,6 +241,7 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
         }
         free(split_buffer);
 
+        // Seamless ARQ Recvfrom
         return arq_recvfrom(sock, buffer, len, flags, src_addr, addr_len);
     }
 
@@ -211,6 +253,15 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
     return size;
 }
 
+/**
+ * Sends an ACK
+ * @param sock                  Socket to use
+ * @param sequence_number_ack   Sequence number to ACK
+ * @param dest_addr             Destination Address
+ * @param addr_len              Size of dest_addr
+ *
+ * @return Received data size
+ */
 ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, int addr_len) {
     char *message = calloc(arq_get_max_packet_size(), sizeof(char));
     sprintf(message, "ACK %d", sequence_number_ack);
@@ -234,10 +285,20 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
     return size;
 }
 
+/**
+ * Get the max data size allowed in a packet.
+ *
+ * @return Max data size
+ */
 int arq_get_max_data_size() {
     return max_packet_size - PACKET_META_SIZE;
 }
 
+/**
+ * Get the max packet size allowed.
+ *
+ * @return Max packet size
+ */
 int arq_get_max_packet_size() {
     if (max_packet_size <= 0) {
         return 255;
