@@ -138,8 +138,9 @@ int main(int argc, char *argv[]) {
 
             memcpy(data, buffer + send_command_length + 1, data_length);
 
-            if (fwrite(data, 1, data_length - 1, fp) != data_length) {
-                printf("Error writing to file.\n");
+            int data_written = 0;
+            if ((data_written = fwrite(data, 1, data_length, fp)) != data_length) {
+                printf("Error writing to file - wrote %d out of %d byte(s).\n", data_written, data_length);
                 /*
                 printf("Terminating connection\n");
                 printf("Connection terminated\n");
