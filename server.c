@@ -101,11 +101,16 @@ int main(int argc, char *argv[])
                         printf("%s - Starting transfer\n", client);
 
                         memset(chunk, 0, chunk_size + 1);
-                        while (fread(chunk, 1, chunk_size, fp) > 0) {
+
+                        int read_chunk_size = 0;
+
+                        while ((read_chunk_size = fread(chunk, 1, chunk_size, fp)) > 0) {
                             memset(buffer, 0, sizeof(char) * arq_get_max_packet_size());
                             sprintf(buffer, "SEND %s", (char *) chunk);
 
-                            if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size) < 0) {
+                            int size = arq_sendto(sock, buffer, arq_get_max_packet_size(), 0, (struct sockaddr *) &client_address, client_address_size);
+                            
+                            if (size < 0) {
                                 fprintf(stderr, "%s - Unable to contact client.\n", client);
 
                                 break;
