@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
     }
 
     free(buffer);
+    buffer = 0;
 
     printf("Starting transfer...\n");
 
@@ -109,6 +110,7 @@ int main(int argc, char *argv[]) {
     do {
         if (buffer) {
             free(buffer);
+            buffer = 0;
         }
 
         buffer = calloc(1, sizeof(char) * arq_get_max_packet_size());
@@ -120,6 +122,7 @@ int main(int argc, char *argv[]) {
             printf("Server returned an error. Exiting.\n");
 
             free(buffer);
+            buffer = 0;
 
             close(sock);
             exit(2);
