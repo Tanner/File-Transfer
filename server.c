@@ -75,6 +75,8 @@ int main(int argc, char *argv[])
         int split_size = 0;
         char **split_buffer = split(buffer, " ", &split_size);
 
+        free(buffer);
+
         if (split_size > 0) {
             // Handle REQUEST
             if (strcmp(split_buffer[0], "REQUEST") == 0) {
@@ -84,11 +86,7 @@ int main(int argc, char *argv[])
 
                     printf("%s - Received request for %s\n", client, file);
 
-                    // 5 b/c number of bytes for "SEND "
-                    int chunk_size = arq_get_max_data_size() - 5;
-
                     FILE *fp = fopen(file, "r");
-                    void *chunk = calloc((size_t) chunk_size + 1, sizeof(char));
 
                     if (!fp) {
                         // Oh no the file error
@@ -101,29 +99,41 @@ int main(int argc, char *argv[])
                         // File was opened successfully
                         printf("%s - Starting transfer\n", client);
 
-                        memset(chunk, 0, chunk_size + 1);
+                        // 5 b/c number of bytes for "SEND "
+                        const int command_size = 5;
+                        int chunk_size = arq_get_max_data_size() - command_size;
 
                         int read_chunk_size = 0;
 
-                        while ((read_chunk_size = fread(chunk, 1, chunk_size, fp)) > 0) {
-                            memset(buffer, 0, sizeof(char) * arq_get_max_packet_size());
-                            sprintf(buffer, "SEND %s", (char *) chunk);
+                        do {
+                            void *chunk = calloc((size_t) chunk_size, sizeof(char));
+                            read_chunk_size = fread(chunk, 1, chunk_size, fp);
 
-                            int size = arq_sendto(sock, buffer, 5 + chunk_size, 0, (struct sockaddr *) &client_address, client_address_size);
-                            
-                            if (size < 0) {
-                                fprintf(stderr, "%s - Unable to contact client.\n", client);
+                            if (read_chunk_size > 0) {
+                                buffer = calloc(arq_get_max_packet_size(), sizeof(char));
 
-                                break;
+                                sprintf(buffer, "SEND %s", (char *) chunk);
+
+                                int size = arq_sendto(sock, buffer, arq_get_max_data_size(), 0, (struct sockaddr *) &client_address, client_address_size);
+                                
+                                if (size < 0) {
+                                    fprintf(stderr, "%s - Unable to contact client.\n", client);
+
+                                    break;
+                                }
+
+                                free(buffer);
                             }
-                        }
+
+                            free(chunk);
+                        } while (read_chunk_size > 0);
 
                         if (feof(fp) != 0) {
                             // End of file was reached
                             printf("%s - Transfer complete\n", client); 
                             printf("%s - Terminating connection\n", client); 
 
-                            memset(buffer, 0, arq_get_max_packet_size());
+                            buffer = calloc(arq_get_max_packet_size(), sizeof(char));
                             strcpy(buffer, "EOF");
 
                             if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &client_address, client_address_size) < 0) {
@@ -143,8 +153,6 @@ int main(int argc, char *argv[])
                             printf("%s - Connection terminated\n", client);
                         }
                     }
-
-                    free(chunk);
                 } else {
                     printf("%s - Incorrect arguments for REQUEST.\n", client);
 
