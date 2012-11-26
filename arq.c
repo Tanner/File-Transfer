@@ -156,6 +156,8 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
 
     MESSAGE *message = message_decode(buffer, size);
 
+    size = message->message_length;
+
     if (debug) {
         printf("Received: %d %s\n", message->sequence_number, message->message);
     }
