@@ -1,6 +1,9 @@
 #include "message.h"
+#include "assert.h"
 
 int message_encode(char *buffer, int size, int sequence_number, char *message, int length) {
+    assert(size - 1 >= length);
+
     memset(buffer, 0, size);
 
     buffer[0] = sequence_number;
@@ -10,16 +13,16 @@ int message_encode(char *buffer, int size, int sequence_number, char *message, i
     return length + 1;
 }
 
-MESSAGE * message_decode(char *buffer) {
+MESSAGE * message_decode(char *buffer, int size) {
     MESSAGE *message = calloc(1, sizeof(MESSAGE));
     assert(message);
 
     message->sequence_number = buffer[0];
 
-    message->message = calloc(strlen(buffer + 1) + 1, sizeof(char));
+    message->message = calloc(size - 1, sizeof(char));
     assert(message->message);
 
-    memmove(message->message, buffer + 1, strlen(buffer + 1));
+    memcpy(message->message, buffer + 1, size - 1);
 
     return message;
 }

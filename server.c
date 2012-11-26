@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                             memset(buffer, 0, sizeof(char) * arq_get_max_packet_size());
                             sprintf(buffer, "SEND %s", (char *) chunk);
 
-                            int size = arq_sendto(sock, buffer, arq_get_max_packet_size(), 0, (struct sockaddr *) &client_address, client_address_size);
+                            int size = arq_sendto(sock, buffer, 5 + chunk_size, 0, (struct sockaddr *) &client_address, client_address_size);
                             
                             if (size < 0) {
                                 fprintf(stderr, "%s - Unable to contact client.\n", client);

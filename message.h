@@ -13,6 +13,6 @@ typedef struct MESSAGE_ {
 } MESSAGE;
 
 int message_encode(char *buffer, int size, int sequence_number, char *message, int length);
-MESSAGE * message_decode(char *buffer);
+MESSAGE * message_decode(char *buffer, int size);
 
 #endif

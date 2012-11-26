@@ -79,7 +79,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
                 }
             } else {
                 // We got a message!
-                MESSAGE *message = message_decode(recv_buffer);
+                MESSAGE *message = message_decode(recv_buffer, recv_buffer_size);
 
                 int split_size = 0;
                 char **split_buffer = split(message->message, " ", &split_size);
@@ -154,7 +154,7 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
 
     int size = recvfrom(sock, buffer, len, flags, src_addr, (socklen_t *) addr_len);
 
-    MESSAGE *message = message_decode(buffer);
+    MESSAGE *message = message_decode(buffer, size);
 
     if (debug) {
         printf("Received: %d %s\n", message->sequence_number, message->message);
