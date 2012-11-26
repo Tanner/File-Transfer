@@ -121,16 +121,18 @@ int main(int argc, char *argv[]) {
             exit(2);
         }
 
-        char *temp = calloc(5, sizeof(char));
-        strncpy(temp, buffer, 4 * sizeof(char));
+        const int send_command_length = 4;
+
+        char *temp = calloc(send_command_length + 1, sizeof(char));
+        strncpy(temp, buffer, send_command_length * sizeof(char));
         
         if (strcmp(temp, "SEND") == 0) {
             // SEND detected; extract data
             char *data = calloc(size, sizeof(char));
 
-            int data_length = size - 5;
+            int data_length = size - send_command_length - 1;
 
-            strncpy(data, buffer + 4, data_length);
+            strncpy(data, buffer + send_command_length + 1, data_length);
 
             if (fwrite(data, 1, data_length, fp) != data_length) {
                 printf("Error writing to file.\n");
