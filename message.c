@@ -11,7 +11,7 @@ int message_encode(char *buffer, int size, int sequence_number, char *message, i
 }
 
 MESSAGE * message_decode(char *buffer) {
-    MESSAGE *message = malloc(sizeof(MESSAGE));
+    MESSAGE *message = calloc(1, sizeof(MESSAGE));
     assert(message);
 
     message->sequence_number = buffer[0];
