@@ -114,6 +114,8 @@ int main(int argc, char *argv[])
 
                                 sprintf(buffer, "SEND %s", (char *) chunk);
 
+                                printf("%s - Sending data\n", client);
+
                                 int size = arq_sendto(sock, buffer, command_size + read_chunk_size, 0, (struct sockaddr *) &client_address, client_address_size);
                                 
                                 if (size < 0) {

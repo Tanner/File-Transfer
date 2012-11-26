@@ -72,6 +72,8 @@ int main(int argc, char *argv[]) {
     time_t start_time_ms, end_time_ms;
 
     // Inform server of max packet size
+    printf("Getting set up...\n");
+
     if (arq_inform_send(sock, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
         fprintf(stderr, "Unable to contact server.\n");
 
@@ -86,9 +88,7 @@ int main(int argc, char *argv[]) {
     start_time_ms = tv.tv_usec / 1000;
 
     // Request the file from the server
-    if (debug) {
-        printf("Requesting file from server.\n");
-    }
+    printf("Requesting file from server...\n");
 
     sprintf(buffer, "REQUEST %s", remote_filename);
 
@@ -118,6 +118,8 @@ int main(int argc, char *argv[]) {
 
     FILE *fp = fopen(local_filename, "w");
 
+    int first_receive = 1;
+
     do {
         // Keep receiving data until we receive EOF or worse, time out
         if (buffer) {
@@ -144,7 +146,7 @@ int main(int argc, char *argv[]) {
 
         char *temp = calloc(send_command_length + 1, sizeof(char));
         strncpy(temp, buffer, send_command_length * sizeof(char));
-        
+
         if (strcmp(temp, "SEND") == 0) {
             // SEND detected; extract data
             int data_length = size - send_command_length - 1;
@@ -152,6 +154,13 @@ int main(int argc, char *argv[]) {
             char *data = calloc(data_length, sizeof(char));
 
             memcpy(data, buffer + send_command_length + 1, data_length);
+
+            if (first_receive) {
+                fprintf(stderr, "Receiving data...");
+                first_receive = 0;
+            } else {
+                fprintf(stderr, ".");
+            }
 
             int data_written = 0;
             if ((data_written = fwrite(data, 1, data_length, fp)) != data_length) {
