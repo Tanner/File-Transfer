@@ -90,6 +90,17 @@ int main(int argc, char *argv[]) {
 
     // Request the file from the server
     sprintf(buffer, "REQUEST %s", remote_filename);
+
+    printf("%d %d\n", strlen(buffer), arq_get_max_data_size());
+    if (strlen(buffer) > arq_get_max_data_size()) {
+        fprintf(stderr, "Max packet size too small for file name.\n");
+
+        free(buffer);
+
+        close(sock);
+        exit(2);
+    }
+
     if (arq_sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
         fprintf(stderr, "Unable to contact server.\n");
 
