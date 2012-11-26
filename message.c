@@ -7,7 +7,7 @@ int message_encode(char *buffer, int size, int sequence_number, char *message, i
 
     memcpy(buffer + 1, message, length);
     
-    return strlen(message) + 1;
+    return length + 1;
 }
 
 MESSAGE * message_decode(char *buffer) {
