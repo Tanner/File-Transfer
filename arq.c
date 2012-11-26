@@ -166,7 +166,7 @@ int arq_recvfrom(int sock, char *buffer, size_t len, int flags, struct sockaddr 
     }
 
     memset(buffer, 0, len);
-    strcpy(buffer, message->message);
+    memcpy(buffer, message->message, message->message_length);
 
     // Free anything alloc'd
     if (src_addr_malloc) {

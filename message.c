@@ -24,5 +24,7 @@ MESSAGE * message_decode(char *buffer, int size) {
 
     memcpy(message->message, buffer + 1, size - 1);
 
+    message->message_length = size - 1;
+
     return message;
 }
