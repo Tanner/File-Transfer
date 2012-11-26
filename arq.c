@@ -1,6 +1,6 @@
 #include "arq.h"
 
-#define ACK_TIMEOUT 2           // Number of seconds to wait for an ACK
+#define ACK_TIMEOUT 250           // Number of ms to wait for an ACK
 #define MAX_RESEND_ATTEMPTS 5   // Number of times to resend before failing.
 
 static int sequence_number;
@@ -66,7 +66,7 @@ ssize_t arq_inform_send(int sock, struct sockaddr *dest_addr, int addr_len) {
  */
 ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockaddr *dest_addr, int addr_len) {
     struct timeval tv;
-    time_t sent_time;
+    long int sent_time, current_time;
     int size = 0;
     char recv_buffer[arq_get_max_packet_size()];
     int recv_buffer_size;
@@ -91,7 +91,7 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
         size = sendto_dropper(sock, package, package_size, flags, dest_addr, addr_len);
 
         gettimeofday(&tv, 0);
-        sent_time = tv.tv_sec;
+        sent_time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 
         do {
             // Non-blocking receive until time out expired to send again
@@ -136,7 +136,8 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
             }
 
             gettimeofday(&tv, 0);
-        } while (tv.tv_sec - sent_time < ACK_TIMEOUT && !message_received);
+            current_time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+        } while (current_time - sent_time < ACK_TIMEOUT && !message_received);
 
         if (!message_received) {
             resend_attempt++;
