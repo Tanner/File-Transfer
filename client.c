@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 
             int data_length = size - send_command_length - 1;
 
-            strncpy(data, buffer + send_command_length + 1, data_length);
+            memcpy(data, buffer + send_command_length + 1, data_length);
 
             if (fwrite(data, 1, data_length, fp) != data_length) {
                 printf("Error writing to file.\n");
