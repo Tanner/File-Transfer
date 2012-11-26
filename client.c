@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 	server_address.sin_addr.s_addr = inet_addr(server_ip);
 	server_address.sin_port = htons(server_port);
 
-    char *buffer = malloc(sizeof(char) * arq_get_max_packet_size());
+    char *buffer = calloc(1, sizeof(char) * arq_get_max_packet_size());
     struct timeval tv;
     time_t start_time_s, end_time_s;
     time_t start_time_ms, end_time_ms;
@@ -99,13 +99,15 @@ int main(int argc, char *argv[]) {
         exit(2);
     }
 
+    free(buffer);
+
     printf("Starting transfer...\n");
 
     FILE *fp = fopen(local_filename, "w");
 
     // Receive the file from the server
     do {
-        memset(buffer, 0, arq_get_max_packet_size());
+        buffer = calloc(1, sizeof(char) * arq_get_max_packet_size());
 
         arq_recvfrom(sock, buffer, arq_get_max_packet_size(), 0, 0, 0);
 
@@ -147,6 +149,8 @@ int main(int argc, char *argv[]) {
         }
 
         free(temp);
+
+        free(buffer);
     } while (strcmp(buffer, "EOF") != 0);
 
     printf("Transfer complete.\n");
@@ -156,8 +160,6 @@ int main(int argc, char *argv[]) {
     end_time_ms = tv.tv_usec / 1000;
 
     printf("Transfer took %d second(s) and %d millisecond(s)\n", (int) (end_time_s - start_time_s), (int) (end_time_ms - start_time_ms));
-
-    free(buffer);
 
     close(sock);
 

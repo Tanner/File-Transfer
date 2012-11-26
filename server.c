@@ -61,12 +61,10 @@ int main(int argc, char *argv[])
 
 	printf("Server started...\n");
 
-    char *buffer = malloc(sizeof(char) * arq_get_max_packet_size());
-
 	while(1) {
 		client_address_size = sizeof(client_address);
 
-        memset(buffer, 0, arq_get_max_packet_size());
+        char *buffer = calloc(1, sizeof(char) * arq_get_max_packet_size());
 
         if (arq_recvfrom(sock, buffer, arq_get_max_packet_size(), 0, (struct sockaddr *) &client_address, &client_address_size) < 0) {
             continue;
@@ -157,9 +155,9 @@ int main(int argc, char *argv[])
             free(split_buffer[i]);
         }
         free(split_buffer);
-    }
 
-    free(buffer);
+        free(buffer);
+    }
 }
 
 int send_error(int sock, struct sockaddr *dest_addr, int addr_len) {
