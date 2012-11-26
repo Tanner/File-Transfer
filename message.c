@@ -1,9 +1,11 @@
 #include "message.h"
 
-int message_encode(char *buffer, int size, int sequence_number, char *message) {
+int message_encode(char *buffer, int size, int sequence_number, char *message, int length) {
     memset(buffer, 0, size);
 
-    sprintf(buffer, "%c%s", sequence_number, message);
+    buffer[0] = sequence_number;
+
+    memcpy(buffer + 1, message, length);
     
     return strlen(message) + 1;
 }

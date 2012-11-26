@@ -53,8 +53,8 @@ ssize_t arq_sendto(int sock, void *buffer, size_t len, int flags, struct sockadd
     memset(recv_buffer, 0, arq_get_max_packet_size());
 
     // Format message to send with sequence number
-    char *package = malloc(sizeof(char) * arq_get_max_packet_size());
-    int package_size = message_encode(package, arq_get_max_packet_size(), sequence_number, buffer);
+    char *package = calloc(1, sizeof(char) * arq_get_max_packet_size());
+    int package_size = message_encode(package, arq_get_max_packet_size(), sequence_number, buffer, len);
 
     // Send the message and see if we get an ACK
     int resend_attempt = 0;
@@ -216,7 +216,7 @@ ssize_t arq_ack(int sock, int sequence_number_ack, struct sockaddr *dest_addr, i
     sprintf(message, "ACK %d", sequence_number_ack);
 
     char *package = calloc(arq_get_max_packet_size(), sizeof(char));
-    int package_size = message_encode(package, arq_get_max_packet_size(), sequence_number, message);
+    int package_size = message_encode(package, arq_get_max_packet_size(), sequence_number, message, strlen(message));
 
     int size = sendto_dropper(sock, package, package_size, 0, dest_addr, addr_len);
 
