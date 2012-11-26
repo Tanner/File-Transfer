@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
                                 sprintf(buffer, "SEND %s", (char *) chunk);
 
-                                int size = arq_sendto(sock, buffer, arq_get_max_data_size(), 0, (struct sockaddr *) &client_address, client_address_size);
+                                int size = arq_sendto(sock, buffer, command_size + read_chunk_size, 0, (struct sockaddr *) &client_address, client_address_size);
                                 
                                 if (size < 0) {
                                     fprintf(stderr, "%s - Unable to contact client.\n", client);
