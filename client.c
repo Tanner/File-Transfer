@@ -107,6 +107,10 @@ int main(int argc, char *argv[]) {
 
     // Receive the file from the server
     do {
+        if (buffer) {
+            free(buffer);
+        }
+
         buffer = calloc(1, sizeof(char) * arq_get_max_packet_size());
 
         int size = arq_recvfrom(sock, buffer, arq_get_max_packet_size(), 0, 0, 0);
@@ -154,9 +158,11 @@ int main(int argc, char *argv[]) {
         }
 
         free(temp);
-
-        free(buffer);
     } while (strcmp(buffer, "EOF") != 0);
+
+    if (buffer) {
+        free(buffer);
+    }
 
     fclose(fp);
 
