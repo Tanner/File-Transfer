@@ -158,6 +158,8 @@ int main(int argc, char *argv[]) {
         free(buffer);
     } while (strcmp(buffer, "EOF") != 0);
 
+    fclose(fp);
+
     printf("Transfer complete.\n");
 
     gettimeofday(&tv, 0);

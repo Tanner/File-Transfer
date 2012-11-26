@@ -152,6 +152,8 @@ int main(int argc, char *argv[])
 
                             printf("%s - Connection terminated\n", client);
                         }
+
+                        fclose(fp);
                     }
                 } else {
                     printf("%s - Incorrect arguments for REQUEST.\n", client);
