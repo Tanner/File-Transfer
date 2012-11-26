@@ -2,15 +2,18 @@
 #include "assert.h"
 
 int message_encode(char *buffer, int size, int sequence_number, char *message, int length) {
-    assert(size - 1 >= length);
+    assert(size - 3 >= length);
 
     memset(buffer, 0, size);
 
     buffer[0] = sequence_number;
 
-    memcpy(buffer + 1, message, length);
+    int *msg_length = (int *) &buffer[1];
+    *msg_length = length;
+
+    memcpy(buffer + 1 + 32, message, length);
     
-    return length + 1;
+    return length + 1 + 32;
 }
 
 MESSAGE * message_decode(char *buffer, int size) {
@@ -19,12 +22,13 @@ MESSAGE * message_decode(char *buffer, int size) {
 
     message->sequence_number = buffer[0];
 
-    message->message = calloc(size - 1, sizeof(char));
+    int *msg_length = (int *) &buffer[1];
+    message->message_length = *msg_length;
+
+    message->message = calloc(message->message_length, sizeof(char));
     assert(message->message);
 
-    memcpy(message->message, buffer + 1, size - 1);
-
-    message->message_length = size - 1;
+    memcpy(message->message, buffer + 1 + 32, message->message_length);
 
     return message;
 }
