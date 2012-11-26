@@ -84,7 +84,8 @@ int main(int argc, char *argv[])
 
                     printf("%s - Received request for %s\n", client, file);
 
-                    int chunk_size = arq_get_max_data_size();
+                    // 5 b/c number of bytes for "SEND "
+                    int chunk_size = arq_get_max_data_size() - 5;
 
                     FILE *fp = fopen(file, "r");
                     void *chunk = calloc((size_t) chunk_size + 1, sizeof(char));
