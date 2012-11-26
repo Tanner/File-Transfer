@@ -14,7 +14,9 @@
 #ifndef __ARQ_H__
 #define __ARQ_H__
 
-#define MIN_PACKET_SIZE 10
+#define PACKET_META_SIZE 33      // 1 byte for sequence number, 32 (int) for size
+
+#define MIN_PACKET_SIZE (PACKET_META_SIZE + 17)      // PMS + some room
 
 int debug;
 
