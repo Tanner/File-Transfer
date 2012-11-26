@@ -92,7 +92,6 @@ int main(int argc, char *argv[]) {
 
     sprintf(buffer, "REQUEST %s", remote_filename);
 
-    printf("%d %d\n", strlen(buffer), arq_get_max_data_size());
     if (strlen(buffer) > arq_get_max_data_size()) {
         fprintf(stderr, "Max packet size too small for file name.\n");
 
