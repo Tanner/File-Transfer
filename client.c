@@ -172,11 +172,15 @@ int main(int argc, char *argv[]) {
 
     printf("Transfer complete.\n");
 
+    // Calculate transfer time
     gettimeofday(&tv, 0);
     end_time_s = tv.tv_sec;
     end_time_ms = tv.tv_usec / 1000;
 
-    printf("Transfer took %d second(s) and %d millisecond(s)\n", (int) (end_time_s - start_time_s), (int) (end_time_ms - start_time_ms));
+    long int start_time = start_time_s * 1000 + start_time_ms;
+    long int end_time = end_time_s * 1000 + end_time_ms;
+
+    printf("Transfer took %ld millisecond(s)\n", (long) (end_time - start_time));
 
     close(sock);
 
