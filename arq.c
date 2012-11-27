@@ -1,7 +1,7 @@
 #include "arq.h"
 
-#define ACK_TIMEOUT 250           // Number of ms to wait for an ACK
-#define MAX_RESEND_ATTEMPTS 5   // Number of times to resend before failing.
+#define ACK_TIMEOUT 50           // Number of ms to wait for an ACK
+#define MAX_RESEND_ATTEMPTS 10   // Number of times to resend before failing.
 
 static int sequence_number;
 static int max_packet_size;
